@@ -1,0 +1,11 @@
+{
+  "name": "cute-car-simulator",
+  "version": "1.0.0",
+  "description": "Cute Car Disney-style landscape game inside simulated iPhone frame",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx -y http-server -p 3000"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cute Car Adventure - Simulator</title>
+    <!-- Google Fonts for premium cartoon & UI typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for clean status icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <!-- Debug Console for catching runtime errors visually -->
+    <div id="errorConsole" style="display:none; position:absolute; top:40px; left:50%; transform:translateX(-50%); background:rgba(220,53,69,0.95); color:white; padding:15px; z-index:99999; font-family:monospace; font-size:11px; border-radius:8px; width:80%; max-height:150px; overflow-y:auto; box-shadow:0 10px 30px rgba(0,0,0,0.5); border:1px solid #ff8888;">
+        <h4 style="margin-bottom:5px; color:#ffcccc;"><i class="fa-solid fa-triangle-exclamation"></i> Runtime Error Detected:</h4>
+        <div id="errorMsgList"></div>
+    </div>
+    <script>
+        function logRemote(msg, type) {
+            fetch('/client_log?type=' + type + '&msg=' + encodeURIComponent(msg)).catch(e => {});
+        }
+        
+        window.onerror = function(message, source, lineno, colno, error) {
+            const consoleDiv = document.getElementById('errorConsole');
+            const listDiv = document.getElementById('errorMsgList');
+            consoleDiv.style.display = 'block';
+            const filename = source ? source.split('/').pop() : 'unknown';
+            const errStr = message + ' (' + filename + ':' + lineno + ')';
+            listDiv.innerHTML += '<div style="margin-top:4px; border-top:1px solid rgba(255,255,255,0.2); padding-top:4px;">' + errStr + '</div>';
+            logRemote(errStr, 'onerror');
+            return false;
+        };
+
+        const oldError = console.error;
+        console.error = function() {
+            const args = Array.from(arguments).join(' ');
+            logRemote(args, 'console_error');
+            oldError.apply(console, arguments);
+        };
+        
+        const oldWarn = console.warn;
+        console.warn = function() {
+            const args = Array.from(arguments).join(' ');
+            logRemote(args, 'console_warn');
+            oldWarn.apply(console, arguments);
+        };
+
+        logRemote('Page script initialized', 'info');
+    </script>
+
+    <div class="desktop-wrapper">
+        <!-- Interactive Workspace Backlight Ambient -->
+        <div class="ambient-glow"></div>
+
+        <!-- Simulated iPhone Container (Landscape) -->
+        <div class="iphone-container" id="iphoneSimulator">
+            <!-- Hardware Buttons -->
+            <div class="button action-button"></div>
+            <div class="button volume-up"></div>
+            <div class="button volume-down"></div>
+            <div class="button power-button" id="powerBtn" title="Lock / Unlock Screen"></div>
+
+            <!-- Outer Titanium Bezel -->
+            <div class="iphone-bezel">
+                <!-- Screen Glass -->
+                <div class="iphone-screen" id="iphoneScreen">
+                    <!-- Dynamic Island (Landscape Left cutout) -->
+                    <div class="dynamic-island" id="dynamicIsland">
+                        <div class="camera-lens"></div>
+                        <div class="sensor-dot"></div>
+                    </div>
+
+                    <!-- 3D Canvas Game Viewport -->
+                    <canvas id="gameCanvas"></canvas>
+
+                    <!-- simulated iOS Status Bar -->
+                    <div class="ios-status-bar">
+                        <div class="status-left">
+                            <span class="status-time">9:41</span>
+                            <span class="status-location"><i class="fa-solid fa-location-arrow"></i></span>
+                        </div>
+                        <div class="status-right">
+                            <i class="fa-solid fa-signal" title="5G Signal"></i>
+                            <span class="status-network">5G</span>
+                            <i class="fa-solid fa-wifi" title="Wi-Fi"></i>
+                            <div class="battery-icon">
+                                <span class="battery-level">100</span>
+                                <div class="battery-body">
+                                    <div class="battery-fill"></div>
+                                    <div class="battery-tip"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overlay HUD UI -->
+                    <div class="game-hud" id="gameHUD">
+                        <!-- Speedometer Widget -->
+                        <div class="hud-widget speedometer">
+                            <div class="speed-value" id="speedVal">0</div>
+                            <div class="speed-unit">MPH</div>
+                            <div class="gear-indicator" id="gearVal">N</div>
+                        </div>
+
+                        <!-- Instruction Overlay (Tap to start) -->
+                        <div class="start-screen" id="startScreen">
+                            <div class="start-title">
+                                <h1>CUTE CAR</h1>
+                                <p class="start-subtitle">Adventure World</p>
+                            </div>
+                            <div class="instructions-panel">
+                                <div class="instruction-row">
+                                    <span class="action-side left-side">LEFT SIDE</span>
+                                    <span class="action-desc"><i class="fa-solid fa-circle-stop"></i> Touch & Hold to Brake</span>
+                                </div>
+                                <div class="instruction-row">
+                                    <span class="action-side right-side">RIGHT SIDE</span>
+                                    <span class="action-desc"><i class="fa-solid fa-circle-dot"></i> Drag Joystick to Drive & Steer</span>
+                                </div>
+                            </div>
+                            <button class="start-btn" id="startBtn">
+                                <i class="fa-solid fa-play"></i> START ENGINE
+                            </button>
+                        </div>
+
+                        <!-- Active Control Visualizers (Visible on Touch) -->
+                        <div class="touch-zones">
+                            <!-- Left Brake Indicator Zone -->
+                            <div class="zone left-zone" id="leftZone">
+                                <div class="brake-indicator" id="brakeIndicator">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span>BRAKE</span>
+                                </div>
+                            </div>
+                            <!-- Right Joystick Zone -->
+                            <div class="zone right-zone" id="rightZone">
+                                <div class="joystick-ring" id="joyRing">
+                                    <div class="joystick-dot" id="joyDot"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Quick Utilities -->
+                        <div class="quick-utils">
+                            <button class="util-btn" id="resetBtn" title="Reset Car Position">
+                                <i class="fa-solid fa-arrows-spin"></i> Reset
+                            </button>
+                            <button class="util-btn" id="muteBtn" title="Mute/Unmute Sounds">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Screen Locked/Off State -->
+                    <div class="screen-off" id="screenOff">
+                        <div class="charging-info">
+                            <i class="fa-solid fa-battery-three-quarters"></i> 100% Charged
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Simulated Home Indicator Bar -->
+            <div class="home-indicator"></div>
+        </div>
+
+        <!-- Simulator Instructions underneath -->
+        <div class="simulator-instructions">
+            <p><strong>Landscape Mode:</strong> Use your mouse like fingers to test the game.</p>
+            <p><kbd>Mouse Right Area Drag</kbd> acts as invisible Joystick. <kbd>Mouse Left Area Press</kbd> acts as Brake.</p>
+            <p>You can also use <kbd>Arrow Keys</kbd> or <kbd>WASD</kbd> on keyboard for desktop testing.</p>
+            <p>Press the iPhone's <span style="color: #ff6b6b; font-weight: bold;">Power Button</span> on the right side to turn the phone screen on/off.</p>
+        </div>
+    </div>
+
+    <!-- Core Game Scripts -->
+    <script src="game.js"></script>
+</body>
+</html>

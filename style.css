@@ -1,0 +1,666 @@
+/* ==========================================================================
+   Design System & Variable Declarations
+   ========================================================================== */
+:root {
+    --bg-desktop: radial-gradient(circle at center, #1e1e2f 0%, #0d0d15 100%);
+    --titanium-bezel: linear-gradient(135deg, #8e8e93 0%, #48484a 50%, #8e8e93 100%);
+    --screen-bezel-color: #0b0b0d;
+    --ios-active-color: #30d158;
+    --hud-bg: rgba(18, 18, 24, 0.6);
+    --hud-border: rgba(255, 255, 255, 0.12);
+    --neon-yellow: #ffe600;
+    --neon-orange: #ff5e00;
+    --brake-color: #ff3b30;
+    --joystick-base: rgba(255, 255, 255, 0.15);
+    --joystick-knob: radial-gradient(circle, #ffffff 0%, #a1a1a1 100%);
+    
+    /* Layout Sizes */
+    --sim-width: 920px;
+    --sim-height: 440px;
+    --screen-radius: 42px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+body {
+    background: #08080f;
+    font-family: 'Outfit', sans-serif;
+    overflow: hidden;
+    color: #ffffff;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ==========================================================================
+   Desktop Wrapper Environment
+   ========================================================================== */
+.desktop-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-desktop);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Soft desk lighting behind the simulator */
+.ambient-glow {
+    position: absolute;
+    width: 600px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 94, 0, 0.15) 0%, rgba(255, 230, 0, 0.05) 50%, transparent 100%);
+    filter: blur(80px);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   iPhone 15/16 Pro Landscape Simulator
+   ========================================================================== */
+.iphone-container {
+    position: relative;
+    width: var(--sim-width);
+    height: var(--sim-height);
+    background: var(--titanium-bezel);
+    border-radius: 54px;
+    padding: 10px; /* Represents the metallic bezel width */
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.7),
+        inset 0 2px 4px rgba(255, 255, 255, 0.4),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+    z-index: 10;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Hardware Buttons */
+.button {
+    position: absolute;
+    background: linear-gradient(to right, #48484a, #8e8e93, #48484a);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    z-index: 5;
+    cursor: pointer;
+}
+
+/* Landscape orientation adjustments for buttons */
+/* Top edge: Volume & Action buttons */
+.action-button {
+    width: 32px;
+    height: 5px;
+    top: -5px;
+    left: 160px;
+}
+.volume-up {
+    width: 50px;
+    height: 5px;
+    top: -5px;
+    left: 220px;
+}
+.volume-down {
+    width: 50px;
+    height: 5px;
+    top: -5px;
+    left: 285px;
+}
+/* Right edge: Power button */
+.power-button {
+    width: 6px;
+    height: 80px;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(to bottom, #48484a, #8e8e93, #48484a);
+    border-radius: 0 4px 4px 0;
+    transition: transform 0.1s ease;
+}
+.power-button:active {
+    transform: translateY(-50%) translateX(-2px);
+}
+
+/* Inner Screen Bezel */
+.iphone-bezel {
+    width: 100%;
+    height: 100%;
+    background: var(--screen-bezel-color);
+    border-radius: 46px;
+    padding: 6px; /* Inner black boundary */
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Screen Glass Area */
+.iphone-screen {
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    border-radius: var(--screen-radius);
+    position: relative;
+    overflow: hidden;
+    touch-action: none; /* Prevent standard swipe/scroll gestures */
+}
+
+/* Dynamic Island (Left edge in landscape orientation) */
+.dynamic-island {
+    position: absolute;
+    width: 25px;
+    height: 85px;
+    background: #000000;
+    border-radius: 18px;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: 10px 0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.camera-lens {
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, #0e111a 0%, #03060f 70%, #1a233d 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 0 2px rgba(255,255,255,0.4);
+}
+.sensor-dot {
+    width: 6px;
+    height: 6px;
+    background: #09090f;
+    border-radius: 50%;
+}
+
+/* ==========================================================================
+   WebGL Canvas
+   ========================================================================== */
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    display: block;
+    touch-action: none;
+}
+
+/* ==========================================================================
+   iOS Status Bar (Landscape styled)
+   ========================================================================== */
+.ios-status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 28px;
+    padding: 0 55px; /* Offset for dynamic island on left, rounded corners */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    z-index: 50;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.status-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 20px; /* Offset to clear left curves */
+}
+.status-time {
+    letter-spacing: 0.2px;
+}
+.status-location {
+    font-size: 9px;
+}
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 15px; /* Offset to clear right curves */
+}
+.status-network {
+    font-weight: 800;
+    font-size: 9px;
+}
+.battery-icon {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.battery-level {
+    font-size: 9px;
+}
+.battery-body {
+    width: 20px;
+    height: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 3px;
+    padding: 1px;
+    position: relative;
+    display: flex;
+}
+.battery-fill {
+    width: 100%;
+    height: 100%;
+    background-color: var(--ios-active-color);
+    border-radius: 1px;
+}
+.battery-tip {
+    position: absolute;
+    right: -3px;
+    top: 2.5px;
+    width: 2px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 0 1px 1px 0;
+}
+
+/* ==========================================================================
+   Heads Up Display Overlay (HUD)
+   ========================================================================== */
+.game-hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 40;
+    pointer-events: none; /* Let clicks fall through to touch zones */
+}
+
+/* Speedometer */
+.hud-widget {
+    position: absolute;
+    background: var(--hud-bg);
+    border: 1px solid var(--hud-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 10px 18px;
+    color: #ffffff;
+    pointer-events: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 60;
+}
+.speedometer {
+    bottom: 20px;
+    left: 80px; /* Shifted to clear dynamic island */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100px;
+}
+.speed-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--neon-yellow);
+    text-shadow: 0 0 10px rgba(255, 230, 0, 0.3);
+}
+.speed-unit {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+.gear-indicator {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--neon-orange);
+    color: #000;
+    font-weight: 800;
+    font-size: 11px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Quick Tools Menu */
+.quick-utils {
+    position: absolute;
+    top: 38px;
+    right: 35px;
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+    z-index: 65;
+}
+.util-btn {
+    background: var(--hud-bg);
+    border: 1px solid var(--hud-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+.util-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+.util-btn:active {
+    transform: scale(0.95);
+}
+
+/* ==========================================================================
+   Touch Control Zones (Split Screen)
+   ========================================================================== */
+.touch-zones {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    z-index: 30;
+    touch-action: none;
+}
+.zone {
+    width: 50%;
+    height: 100%;
+    position: relative;
+    pointer-events: auto; /* Active for touch events */
+    touch-action: none;
+}
+.left-zone {
+    /* Brake Zone */
+}
+.right-zone {
+    /* Joystick Zone */
+}
+
+/* Brake HUD feedback (Left half) */
+.brake-indicator {
+    position: absolute;
+    bottom: 25px;
+    left: 205px; /* Positioned nicely near brake zone */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 59, 48, 0.15);
+    border: 1.5px dashed rgba(255, 59, 48, 0.4);
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: var(--brake-color);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    opacity: 0.6;
+    transition: all 0.15s ease;
+}
+.left-zone:active .brake-indicator,
+.brake-active .brake-indicator {
+    opacity: 1;
+    background: rgba(255, 59, 48, 0.45);
+    border-color: var(--brake-color);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 59, 48, 0.3);
+}
+
+/* Virtual Joystick graphical elements (Right half) */
+.joystick-ring {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    background: var(--joystick-base);
+    border-radius: 50%;
+    display: none; /* Managed dynamically via JS */
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.1);
+    z-index: 90;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+.joystick-dot {
+    width: 36px;
+    height: 36px;
+    background: var(--joystick-knob);
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), inset 0 2px 2px rgba(255,255,255,0.6);
+}
+
+/* ==========================================================================
+   Start Screen & Lock Screen Overlay
+   ========================================================================== */
+.start-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 16, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 80;
+    padding: 30px 60px;
+    transition: opacity 0.5s ease, visibility 0.5s;
+    pointer-events: auto;
+}
+.start-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.start-title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.start-title h1 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 46px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--neon-yellow) 0%, var(--neon-orange) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 20px rgba(255, 94, 0, 0.15);
+    line-height: 1.1;
+}
+.start-subtitle {
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 4px;
+}
+.instructions-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 25px;
+    width: 100%;
+    max-width: 420px;
+}
+.instruction-row {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.action-side {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+.left-side {
+    background: rgba(255, 59, 48, 0.2);
+    color: var(--brake-color);
+}
+.right-side {
+    background: rgba(48, 209, 88, 0.2);
+    color: var(--ios-active-color);
+}
+.action-desc {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.start-btn {
+    font-family: 'Fredoka', sans-serif;
+    background: linear-gradient(135deg, #ff9f0a 0%, var(--neon-orange) 100%);
+    border: none;
+    color: #fff;
+    padding: 12px 36px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(255, 94, 0, 0.4), inset 0 2px 2px rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(255, 94, 0, 0.5);
+}
+.start-btn:active {
+    transform: translateY(1px);
+}
+
+/* iPhone Screen Locked (Power button state) */
+.screen-off {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    z-index: 150;
+    display: none; /* Controlled by Power button toggle */
+    justify-content: center;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13px;
+    pointer-events: auto;
+}
+.screen-off.active {
+    display: flex;
+}
+.charging-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    animation: pulse 3s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   Home Indicator Bar (iOS Swipe Home bar in landscape)
+   ========================================================================== */
+.home-indicator {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.45);
+    border-radius: 2px;
+    z-index: 99;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Simulator Desktop Instructions Style
+   ========================================================================== */
+.simulator-instructions {
+    margin-top: 24px;
+    text-align: center;
+    z-index: 2;
+    max-width: 600px;
+}
+.simulator-instructions p {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.6;
+    margin-bottom: 4px;
+}
+kbd {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.85);
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+}
+
+/* ==========================================================================
+   Responsive Scaling
+   ========================================================================== */
+@media (max-width: 960px) {
+    .iphone-container {
+        transform: scale(0.85);
+    }
+}
+@media (max-width: 800px) {
+    .iphone-container {
+        transform: scale(0.68);
+    }
+}
+@media (max-width: 620px) {
+    .iphone-container {
+        transform: scale(0.5);
+    }
+    .simulator-instructions {
+        margin-top: -40px;
+    }
+}
