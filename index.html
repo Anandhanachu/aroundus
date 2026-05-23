@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <!-- Three.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <!-- Debug Console for catching runtime errors visually -->
@@ -26,6 +26,10 @@
         }
         
         window.onerror = function(message, source, lineno, colno, error) {
+            // Ignore generic cross-origin or extension script errors
+            if (message === 'Script error.' || !source || source.includes('extension') || lineno === 0) {
+                return false;
+            }
             const consoleDiv = document.getElementById('errorConsole');
             const listDiv = document.getElementById('errorMsgList');
             consoleDiv.style.display = 'block';

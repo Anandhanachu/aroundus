@@ -725,9 +725,7 @@ function createCuteCar() {
         metalness: 0.15,
         clearcoat: 1.0,
         clearcoatRoughness: 0.05,
-        sheen: 0.8,
-        sheenColor: new THREE.Color(0xff88a8),
-        sheenRoughness: 0.15
+        sheen: new THREE.Color(0xff88a8)
     });
     
     const creamWhiteMat = new THREE.MeshPhysicalMaterial({
