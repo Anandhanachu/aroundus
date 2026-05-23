@@ -757,67 +757,64 @@ function createCuteCar() {
         metalness: 0.05
     });
 
-    // 1. Lower Chassis (Rounded Retro Body)
-    const chassisGeo = new THREE.BoxGeometry(1.85, 0.52, 3.1);
-    const chassis = new THREE.Mesh(chassisGeo, bodyPaintMat);
-    chassis.position.y = 0.35;
-    chassis.castShadow = true;
-    chassis.receiveShadow = true;
-    carBodyGroup.add(chassis);
+    // 1. Lower Chassis (Rounded bubble body using a stretched sphere instead of a box!)
+    const bodyGeo = new THREE.SphereGeometry(1.0, 24, 24);
+    const bodyMesh = new THREE.Mesh(bodyGeo, bodyPaintMat);
+    bodyMesh.scale.set(0.9, 0.45, 1.45); // Stretched along Z, squashed vertically
+    bodyMesh.position.y = 0.42;
+    bodyMesh.castShadow = true;
+    bodyMesh.receiveShadow = true;
+    carBodyGroup.add(bodyMesh);
 
-    // 2. Front Hood/Nose (Tapers forward slightly)
-    const hoodGeo = new THREE.BoxGeometry(1.78, 0.42, 1.05);
-    const hood = new THREE.Mesh(hoodGeo, bodyPaintMat);
-    hood.position.set(0, 0.3, 1.2);
-    hood.castShadow = true;
-    carBodyGroup.add(hood);
+    // 2. Front Hood (Stretched sphere for bubbly retro hood!)
+    const hoodGeo = new THREE.SphereGeometry(1.0, 24, 24);
+    const hoodMesh = new THREE.Mesh(hoodGeo, bodyPaintMat);
+    hoodMesh.scale.set(0.85, 0.36, 0.7); // Stretched forward
+    hoodMesh.position.set(0, 0.36, 0.88);
+    hoodMesh.castShadow = true;
+    carBodyGroup.add(hoodMesh);
 
-    // Rounded nose curve front bumper face
-    const noseGeo = new THREE.BoxGeometry(1.6, 0.3, 0.3);
-    const nose = new THREE.Mesh(noseGeo, bodyPaintMat);
-    nose.position.set(0, 0.15, 1.7);
-    nose.castShadow = true;
-    carBodyGroup.add(nose);
-
-    // 3. Two-Tone Cream White Canopy Roof (Nissan Figaro signature)
-    const canopyGeo = new THREE.BoxGeometry(1.42, 0.72, 1.6);
+    // 3. Two-Tone Cream White Canopy Roof (Nissan Figaro signature - bubbly dome!)
+    const canopyGeo = new THREE.SphereGeometry(1.0, 24, 24);
     const canopy = new THREE.Mesh(canopyGeo, creamWhiteMat);
-    canopy.position.set(0, 0.85, -0.2);
+    canopy.scale.set(0.72, 0.44, 0.88); // Bubbly dome
+    canopy.position.set(0, 0.78, -0.15);
     canopy.castShadow = true;
     carBodyGroup.add(canopy);
 
     // Windshield frame (White base for eyes)
-    const windshieldGeo = new THREE.PlaneGeometry(1.28, 0.62);
+    const windshieldGeo = new THREE.PlaneGeometry(1.05, 0.52);
     const windshield = new THREE.Mesh(windshieldGeo, glassMat);
-    windshield.position.set(0, 0.88, 0.61);
-    windshield.rotation.x = -0.32;
+    // Placed on the front slope of the canopy sphere
+    windshield.position.set(0, 0.84, 0.48);
+    windshield.rotation.x = -0.42; // slightly steeper slope
     carBodyGroup.add(windshield);
 
     // Expressive Eyes Setup
     const eyeGroup = new THREE.Group();
-    eyeGroup.position.set(0, 0.88, 0.62);
-    eyeGroup.rotation.x = -0.32;
+    eyeGroup.position.set(0, 0.84, 0.49);
+    eyeGroup.rotation.x = -0.42;
     carBodyGroup.add(eyeGroup);
 
     // Eye whites
-    const eyeWhiteGeo = new THREE.CircleGeometry(0.22, 24);
+    const eyeWhiteGeo = new THREE.CircleGeometry(0.18, 24);
     
     const leftEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyesBaseMat);
-    leftEyeWhite.position.set(-0.28, 0, 0);
+    leftEyeWhite.position.set(-0.23, 0, 0);
     eyeGroup.add(leftEyeWhite);
 
     const rightEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyesBaseMat);
-    rightEyeWhite.position.set(0.28, 0, 0);
+    rightEyeWhite.position.set(0.23, 0, 0);
     eyeGroup.add(rightEyeWhite);
 
     // Pupil structures
-    const pupilBaseGeo = new THREE.CircleGeometry(0.11, 16);
-    const pupilCoreGeo = new THREE.CircleGeometry(0.05, 16);
-    const shineGeo = new THREE.CircleGeometry(0.022, 12);
+    const pupilBaseGeo = new THREE.CircleGeometry(0.09, 16);
+    const pupilCoreGeo = new THREE.CircleGeometry(0.04, 16);
+    const shineGeo = new THREE.CircleGeometry(0.018, 12);
 
     // Left Pupil
     leftPupil = new THREE.Group();
-    leftPupil.position.set(-0.28, 0, 0.005);
+    leftPupil.position.set(-0.23, 0, 0.005);
     
     const lpBlue = new THREE.Mesh(pupilBaseGeo, pupilBlueMat);
     leftPupil.add(lpBlue);
@@ -825,13 +822,13 @@ function createCuteCar() {
     lpBlack.position.z = 0.001;
     leftPupil.add(lpBlack);
     const lpShine = new THREE.Mesh(shineGeo, eyeHighlightMat);
-    lpShine.position.set(0.035, 0.035, 0.002);
+    lpShine.position.set(0.028, 0.028, 0.002);
     leftPupil.add(lpShine);
     eyeGroup.add(leftPupil);
 
     // Right Pupil
     rightPupil = new THREE.Group();
-    rightPupil.position.set(0.28, 0, 0.005);
+    rightPupil.position.set(0.23, 0, 0.005);
     
     const rpBlue = new THREE.Mesh(pupilBaseGeo, pupilBlueMat);
     rightPupil.add(rpBlue);
@@ -839,7 +836,7 @@ function createCuteCar() {
     rpBlack.position.z = 0.001;
     rightPupil.add(rpBlack);
     const rpShine = new THREE.Mesh(shineGeo, eyeHighlightMat);
-    rpShine.position.set(0.035, 0.035, 0.002);
+    rpShine.position.set(0.028, 0.028, 0.002);
     rightPupil.add(rpShine);
     eyeGroup.add(rightPupil);
 
@@ -867,39 +864,36 @@ function createCuteCar() {
     }
 
     const grilleTex = new THREE.CanvasTexture(grilleCanvas);
-    const grilleGeo = new THREE.BoxGeometry(1.15, 0.42, 0.04);
+    const grilleGeo = new THREE.BoxGeometry(0.9, 0.34, 0.04);
     const grilleMat = new THREE.MeshStandardMaterial({
         map: grilleTex,
         roughness: 0.1,
         metalness: 0.8
     });
     const grille = new THREE.Mesh(grilleGeo, grilleMat);
-    grille.position.set(0, 0.22, 1.71);
+    grille.position.set(0, 0.22, 1.51);
     carBodyGroup.add(grille);
 
-    // Chrome border trim around the grille
-    const trimGeo = new THREE.BoxGeometry(1.23, 0.48, 0.02);
+    // Chrome border trim around the grille (bubbly rounded border)
+    const trimGeo = new THREE.BoxGeometry(0.98, 0.4, 0.02);
     const trim = new THREE.Mesh(trimGeo, chromeMat);
-    trim.position.set(0, 0.22, 1.70);
+    trim.position.set(0, 0.22, 1.50);
     carBodyGroup.add(trim);
 
-    // 5. Classic Figaro Round Headlights
-    // Chrome housings sticking up from fenders
-    const lightHousingGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.32, 14);
-    lightHousingGeo.rotateX(Math.PI / 2); // Point forward
-    
+    // 5. Classic Figaro Round Headlights (Bubbly spheres!)
+    const lightHousingGeo = new THREE.SphereGeometry(0.22, 16, 16);
     const leftHousing = new THREE.Mesh(lightHousingGeo, chromeMat);
-    leftHousing.position.set(-0.62, 0.48, 1.48);
+    leftHousing.scale.set(1.0, 1.0, 1.2); // Point forward
+    leftHousing.position.set(-0.55, 0.44, 1.35);
     leftHousing.castShadow = true;
     carBodyGroup.add(leftHousing);
 
     const rightHousing = leftHousing.clone();
-    rightHousing.position.x = 0.62;
+    rightHousing.position.x = 0.55;
     carBodyGroup.add(rightHousing);
 
     // Glowing headlight lens
-    const lensGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.05, 14);
-    lensGeo.rotateX(Math.PI / 2);
+    const lensGeo = new THREE.SphereGeometry(0.16, 12, 12);
     const lensMat = new THREE.MeshStandardMaterial({
         color: 0xfffee4,
         emissive: 0xfffaab,
@@ -908,41 +902,52 @@ function createCuteCar() {
     });
 
     const leftLens = new THREE.Mesh(lensGeo, lensMat);
-    leftLens.position.set(-0.62, 0.48, 1.63);
+    leftLens.position.set(-0.55, 0.44, 1.5);
+    leftLens.scale.set(1.0, 1.0, 0.3); // Flatten lens
     carBodyGroup.add(leftLens);
 
     const rightLens = leftLens.clone();
-    rightLens.position.x = 0.62;
+    rightLens.position.x = 0.55;
     carBodyGroup.add(rightLens);
 
-    // 6. Retro Chrome Front Bumper Bar
-    const bumperGeo = new THREE.CylinderGeometry(0.05, 0.05, 1.9, 10);
+    // 6. Retro Chrome Front Bumper Bar (with rounded end caps)
+    const bumperGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.7, 10);
     bumperGeo.rotateZ(Math.PI / 2); // Make horizontal
     const frontBumper = new THREE.Mesh(bumperGeo, chromeMat);
-    frontBumper.position.set(0, 0.12, 1.83);
+    frontBumper.position.set(0, 0.12, 1.6);
     frontBumper.castShadow = true;
     carBodyGroup.add(frontBumper);
 
+    // End caps
+    const capGeo = new THREE.SphereGeometry(0.045, 8, 8);
+    const leftCap = new THREE.Mesh(capGeo, chromeMat);
+    leftCap.position.set(-0.85, 0.12, 1.6);
+    carBodyGroup.add(leftCap);
+
+    const rightCap = leftCap.clone();
+    rightCap.position.x = 0.85;
+    carBodyGroup.add(rightCap);
+
     // 7. Side Mirrors (Mounted on door/canopy sides)
-    const mirrorStemGeo = new THREE.CylinderGeometry(0.024, 0.024, 0.34, 8);
+    const mirrorStemGeo = new THREE.CylinderGeometry(0.018, 0.018, 0.34, 8);
     const leftStem = new THREE.Mesh(mirrorStemGeo, chromeMat);
-    leftStem.position.set(-0.84, 0.62, 0.38);
+    leftStem.position.set(-0.8, 0.58, 0.32);
     leftStem.rotation.z = -Math.PI / 8; // Angle outward
     carBodyGroup.add(leftStem);
 
     const rightStem = leftStem.clone();
-    rightStem.position.x = 0.84;
+    rightStem.position.x = 0.8;
     rightStem.rotation.z = Math.PI / 8;
     carBodyGroup.add(rightStem);
 
-    const mirrorHeadGeo = new THREE.SphereGeometry(0.12, 10, 10);
+    const mirrorHeadGeo = new THREE.SphereGeometry(0.11, 12, 12);
     const leftHead = new THREE.Mesh(mirrorHeadGeo, creamWhiteMat);
-    leftHead.position.set(-0.94, 0.77, 0.38);
-    leftHead.scale.set(1.2, 0.8, 1.0); // Oval/ Figaro shape
+    leftHead.position.set(-0.89, 0.72, 0.32);
+    leftHead.scale.set(1.25, 0.85, 1.0); // Oval/ Figaro shape
     carBodyGroup.add(leftHead);
 
     const rightHead = leftHead.clone();
-    rightHead.position.x = 0.94;
+    rightHead.position.x = 0.89;
     carBodyGroup.add(rightHead);
 
     // 8. Smiling Radiator Mouth (on bumper lower snout)
@@ -968,26 +973,26 @@ function createCuteCar() {
     smCtx.fill();
 
     const mouthTex = new THREE.CanvasTexture(smileCanvas);
-    const mouthGeo = new THREE.PlaneGeometry(0.85, 0.42);
+    const mouthGeo = new THREE.PlaneGeometry(0.72, 0.36);
     const mouthMat = new THREE.MeshStandardMaterial({
         map: mouthTex,
         transparent: true,
         roughness: 0.15
     });
     const mouth = new THREE.Mesh(mouthGeo, mouthMat);
-    mouth.position.set(0, 0.08, 1.84); // Mounted right in front of bumper bar
+    mouth.position.set(0, 0.1, 1.62); // Mounted right in front of bumper bar
     mouth.rotation.x = 0.02;
     carBodyGroup.add(mouth);
 
     // 9. Shiny Chrome Exhaust pipe at rear
-    const tailpipeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.7, 8);
+    const tailpipeGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.7, 8);
     const tailpipe = new THREE.Mesh(tailpipeGeo, chromeMat);
     tailpipe.rotation.x = Math.PI / 2;
-    tailpipe.position.set(-0.6, 0.12, -1.6);
+    tailpipe.position.set(-0.55, 0.12, -1.45);
     carBodyGroup.add(tailpipe);
 
-    // 10. Glowing Brake Lights at rear corners
-    const tailLightGeo = new THREE.BoxGeometry(0.24, 0.14, 0.06);
+    // 10. Glowing Brake Lights at rear corners (bubbly rounded capsules!)
+    const tailLightGeo = new THREE.SphereGeometry(0.11, 12, 12);
     const tailLightMat = new THREE.MeshStandardMaterial({
         color: 0x990000,
         emissive: 0xff0000,
@@ -996,11 +1001,12 @@ function createCuteCar() {
     });
 
     const leftTailLight = new THREE.Mesh(tailLightGeo, tailLightMat);
-    leftTailLight.position.set(-0.72, 0.4, -1.56);
+    leftTailLight.scale.set(1.2, 0.8, 0.6); // flattened capsule
+    leftTailLight.position.set(-0.68, 0.36, -1.35);
     carBodyGroup.add(leftTailLight);
 
     const rightTailLight = leftTailLight.clone();
-    rightTailLight.position.x = 0.72;
+    rightTailLight.position.x = 0.68;
     carBodyGroup.add(rightTailLight);
 
     carBodyGroup.userData = {
@@ -1008,8 +1014,7 @@ function createCuteCar() {
         rightLight: rightTailLight
     };
 
-    // 11. Retro Nissan Figaro Wheels Setup
-    // Black tire cylinder with solid white hub caps & chrome centers
+    // 11. Retro Nissan Figaro Wheels Setup (Tires are cylinders, white dish is cylinder, chrome cap is cylinder)
     const wheelGeo = new THREE.CylinderGeometry(WHEEL_RADIUS, WHEEL_RADIUS, 0.38, 18);
     wheelGeo.rotateZ(Math.PI / 2);
 
@@ -1038,21 +1043,21 @@ function createCuteCar() {
 
     // Place wheels directly on carGroup
     rearLeftWheel = createFigaroWheel();
-    rearLeftWheel.position.set(-1.0, 0.1, -0.85);
+    rearLeftWheel.position.set(-0.95, 0.1, -0.8);
     carGroup.add(rearLeftWheel);
 
     rearRightWheel = createFigaroWheel();
-    rearRightWheel.position.set(1.0, 0.1, -0.85);
+    rearRightWheel.position.set(0.95, 0.1, -0.8);
     carGroup.add(rearRightWheel);
 
     frontLeftWheel = new THREE.Group();
-    frontLeftWheel.position.set(-1.0, 0.1, 0.95);
+    frontLeftWheel.position.set(-0.95, 0.1, 0.85);
     const flMesh = createFigaroWheel();
     frontLeftWheel.add(flMesh);
     carGroup.add(frontLeftWheel);
 
     frontRightWheel = new THREE.Group();
-    frontRightWheel.position.set(1.0, 0.1, 0.95);
+    frontRightWheel.position.set(0.95, 0.1, 0.85);
     const frMesh = createFigaroWheel();
     frontRightWheel.add(frMesh);
     carGroup.add(frontRightWheel);
