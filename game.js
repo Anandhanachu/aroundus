@@ -9,17 +9,29 @@
 class SoundEngine {
     constructor() {
         this.ctx = null;
-        this.engineOsc1 = null;
-        this.engineOsc2 = null;
-        this.engineGain = null;
-        this.idleFilter = null;
-        
-        this.screechOsc = null;
-        this.screechGain = null;
-        this.screechFilter = null;
-        
         this.muted = false;
         this.initialized = false;
+        
+        // Music state
+        this.musicInterval = null;
+        this.currentBeat = 0;
+        this.tempo = 115; // BPM
+        
+        // Sweet, cartoon pentatonic melody
+        this.melody = [
+            329.63, 392.00, 440.00, 523.25, 0, 523.25, 440.00, 392.00,
+            329.63, 0,      329.63, 293.66, 261.63, 0,      261.63, 293.66,
+            329.63, 392.00, 440.00, 523.25, 587.33, 0,      523.25, 440.00,
+            392.00, 440.00, 392.00, 329.63, 293.66, 0,      0,      0
+        ]; // 32 beats loop (8th notes)
+        
+        // Balanced chord progression (bass arpeggios):
+        this.bass = [
+            130.81, 164.81, 196.00, 164.81, // C major
+            110.00, 130.81, 165.00, 130.81, // A minor
+            87.31,  103.83, 130.81, 103.83, // F major
+            98.00,  123.47, 146.83, 123.47  // G major
+        ]; // 16 beats (quarter notes)
     }
 
     init() {
@@ -28,169 +40,89 @@ class SoundEngine {
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             this.ctx = new AudioContext();
-
-            // Main Engine hum chain
-            this.engineOsc1 = this.ctx.createOscillator();
-            this.engineOsc2 = this.ctx.createOscillator();
-            this.engineGain = this.ctx.createGain();
-            this.idleFilter = this.ctx.createBiquadFilter();
-
-            // Oscillator 1 - Sawtooth for rough engine vibrations
-            this.engineOsc1.type = 'sawtooth';
-            this.engineOsc1.frequency.setValueAtTime(40, this.ctx.currentTime);
-
-            // Oscillator 2 - Triangle for a warm body rumble
-            this.engineOsc2.type = 'triangle';
-            this.engineOsc2.frequency.setValueAtTime(80, this.ctx.currentTime);
-
-            // Lowpass filter to make it sound muffled/cartoonish
-            this.idleFilter.type = 'lowpass';
-            this.idleFilter.frequency.setValueAtTime(140, this.ctx.currentTime);
-
-            this.engineGain.gain.setValueAtTime(0.0, this.ctx.currentTime);
-
-            // Connections
-            this.engineOsc1.connect(this.idleFilter);
-            this.engineOsc2.connect(this.idleFilter);
-            this.idleFilter.connect(this.engineGain);
-            this.engineGain.connect(this.ctx.destination);
-
-            this.engineOsc1.start();
-            this.engineOsc2.start();
-
-            // Brake Screech chain
-            this.screechOsc = this.ctx.createOscillator();
-            this.screechGain = this.ctx.createGain();
-            this.screechFilter = this.ctx.createBiquadFilter();
-
-            this.screechOsc.type = 'triangle';
-            this.screechOsc.frequency.setValueAtTime(1800, this.ctx.currentTime);
-
-            this.screechFilter.type = 'bandpass';
-            this.screechFilter.frequency.setValueAtTime(2000, this.ctx.currentTime);
-            this.screechFilter.Q.setValueAtTime(2.0, this.ctx.currentTime);
-
-            this.screechGain.gain.setValueAtTime(0.0, this.ctx.currentTime);
-
-            this.screechOsc.connect(this.screechFilter);
-            this.screechFilter.connect(this.screechGain);
-            this.screechGain.connect(this.ctx.destination);
-
-            this.screechOsc.start();
-
             this.initialized = true;
-            console.log("Audio Engine Initialized Successfully.");
+            console.log("Music Audio Engine Initialized Successfully.");
         } catch (e) {
             console.warn("Web Audio API not supported or blocked: ", e);
         }
     }
 
-    startEngineSequence() {
+    startMusic() {
         if (!this.initialized) this.init();
         if (this.muted || !this.ctx) return;
 
-        // Resume context if suspended (browser security)
+        // Resume AudioContext if suspended
         if (this.ctx.state === 'suspended') {
             this.ctx.resume();
         }
 
-        const now = this.ctx.currentTime;
+        if (this.musicInterval) clearInterval(this.musicInterval);
 
-        // Rev Up Sound Sequence
-        this.engineGain.gain.setValueAtTime(0.0, now);
-        this.engineGain.gain.linearRampToValueAtTime(0.15, now + 0.1);
-        this.engineGain.gain.exponentialRampToValueAtTime(0.07, now + 1.2);
-
-        this.engineOsc1.frequency.setValueAtTime(35, now);
-        this.engineOsc1.frequency.exponentialRampToValueAtTime(190, now + 0.4);
-        this.engineOsc1.frequency.exponentialRampToValueAtTime(55, now + 1.2);
-
-        this.engineOsc2.frequency.setValueAtTime(70, now);
-        this.engineOsc2.frequency.exponentialRampToValueAtTime(380, now + 0.4);
-        this.engineOsc2.frequency.exponentialRampToValueAtTime(110, now + 1.2);
-
-        this.idleFilter.frequency.setValueAtTime(120, now);
-        this.idleFilter.frequency.exponentialRampToValueAtTime(450, now + 0.4);
-        this.idleFilter.frequency.exponentialRampToValueAtTime(160, now + 1.2);
-    }
-
-    updateEngineSound(speedRatio) {
-        if (!this.initialized || this.muted || !this.ctx) return;
-
-        const now = this.ctx.currentTime;
+        const beatDuration = 60 / this.tempo / 2; // 8th note duration (seconds)
         
-        // Map pitch: 55Hz (idle) to 200Hz (full throttle)
-        const targetPitch = 55 + (speedRatio * 145);
-        this.engineOsc1.frequency.setTargetAtTime(targetPitch, now, 0.08);
-        this.engineOsc2.frequency.setTargetAtTime(targetPitch * 2, now, 0.08);
+        this.musicInterval = setInterval(() => {
+            if (this.muted || !this.ctx || this.ctx.state === 'suspended') return;
 
-        // Filter opens up as speed increases, letting high frequencies out
-        const filterCutoff = 150 + (speedRatio * 600);
-        this.idleFilter.frequency.setTargetAtTime(filterCutoff, now, 0.1);
-
-        // Volume rises slightly at speed
-        const volume = 0.06 + (speedRatio * 0.08);
-        this.engineGain.gain.setTargetAtTime(volume, now, 0.15);
+            const now = this.ctx.currentTime;
+            
+            // 1. Play melody note (8th notes)
+            const melodyFreq = this.melody[this.currentBeat % this.melody.length];
+            if (melodyFreq > 0) {
+                this.playTone(melodyFreq, 'triangle', 0.04, 0.22, now);
+            }
+            
+            // 2. Play arpeggiated bass (quarter notes, every 2 beats)
+            if (this.currentBeat % 2 === 0) {
+                const bassStep = Math.floor(this.currentBeat / 2) % this.bass.length;
+                const bassFreq = this.bass[bassStep];
+                this.playTone(bassFreq, 'sine', 0.07, 0.4, now);
+            }
+            
+            this.currentBeat++;
+        }, beatDuration * 1000);
     }
 
-    updateBrakingSound(isBraking, speed) {
-        if (!this.initialized || this.muted || !this.ctx) return;
+    playTone(freq, type, volume, duration, time) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gainNode = this.ctx.createGain();
+        
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, time);
+        
+        gainNode.gain.setValueAtTime(volume, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+        
+        osc.connect(gainNode);
+        gainNode.connect(this.ctx.destination);
+        
+        osc.start(time);
+        osc.stop(time + duration);
+    }
 
-        const now = this.ctx.currentTime;
-        if (isBraking && speed > 0.05) {
-            // Volume modulated by vehicle speed
-            const targetVolume = Math.min(speed * 0.2, 0.08);
-            this.screechGain.gain.setTargetAtTime(targetVolume, now, 0.05);
-
-            // Frequency drops slightly as car stops
-            const targetScreechFreq = 1600 + (speed * 800);
-            this.screechOsc.frequency.setTargetAtTime(targetScreechFreq, now, 0.05);
-            this.screechFilter.frequency.setTargetAtTime(targetScreechFreq + 200, now, 0.05);
-        } else {
-            this.screechGain.gain.setTargetAtTime(0.0, now, 0.05);
+    stopMusic() {
+        if (this.musicInterval) {
+            clearInterval(this.musicInterval);
+            this.musicInterval = null;
         }
     }
 
-    playHonk() {
-        if (!this.initialized || this.muted || !this.ctx) return;
-        
-        const now = this.ctx.currentTime;
-        const osc1 = this.ctx.createOscillator();
-        const osc2 = this.ctx.createOscillator();
-        const honkGain = this.ctx.createGain();
-
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(392, now); // G4 Note
-        
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(395, now); // De-tuned for cartoon beep
-
-        honkGain.gain.setValueAtTime(0, now);
-        honkGain.gain.linearRampToValueAtTime(0.12, now + 0.02);
-        honkGain.gain.setValueAtTime(0.12, now + 0.18);
-        honkGain.gain.linearRampToValueAtTime(0, now + 0.22);
-        honkGain.gain.setValueAtTime(0, now + 0.25);
-        honkGain.gain.linearRampToValueAtTime(0.12, now + 0.27);
-        honkGain.gain.setValueAtTime(0.12, now + 0.43);
-        honkGain.gain.linearRampToValueAtTime(0, now + 0.47);
-
-        osc1.connect(honkGain);
-        osc2.connect(honkGain);
-        honkGain.connect(this.ctx.destination);
-
-        osc1.start();
-        osc2.start();
-        osc1.stop(now + 0.5);
-        osc2.stop(now + 0.5);
+    // Dummy methods for vehicle sound compatibility
+    startEngineSequence() {
+        this.startMusic();
     }
+    updateEngineSound(speedRatio) {}
+    updateBrakingSound(isBraking, speed) {}
+    playHonk() {}
 
     toggleMute() {
         this.muted = !this.muted;
         if (this.muted) {
-            if (this.engineGain) this.engineGain.gain.setValueAtTime(0.0, this.ctx.currentTime);
-            if (this.screechGain) this.screechGain.gain.setValueAtTime(0.0, this.ctx.currentTime);
+            this.stopMusic();
         } else {
-            if (this.engineGain) this.engineGain.gain.setValueAtTime(0.07, this.ctx.currentTime);
+            if (isPlaying && screenActive) {
+                this.startMusic();
+            }
         }
         return this.muted;
     }
@@ -235,6 +167,7 @@ let isDriving = false;
 const particles = [];
 const clouds = [];
 const cacti = [];
+const boundaryRocks = [];
 const meshes = [];
 
 // Blink Animation Timings
@@ -507,6 +440,8 @@ function createDesertBoundary() {
         // Random Y rotation
         rock.rotation.y = Math.random() * Math.PI;
         scene.add(rock);
+
+        boundaryRocks.push({ x: x, z: z, radius: radiusBottom });
     }
 }
 
@@ -1370,17 +1305,12 @@ function setupControlListeners() {
         screenActive = !screenActive;
         if (screenActive) {
             screenOff.classList.remove('active');
-            // Wake up engine hum
-            if (isPlaying) {
-                audio.startEngineSequence();
+            if (isPlaying && !audio.muted) {
+                audio.startMusic();
             }
         } else {
             screenOff.classList.add('active');
-            // Mute everything instantly on lock
-            if (audio.initialized) {
-                if (audio.engineGain) audio.engineGain.gain.setValueAtTime(0, audio.ctx.currentTime);
-                if (audio.screechGain) audio.screechGain.gain.setValueAtTime(0, audio.ctx.currentTime);
-            }
+            audio.stopMusic();
         }
     });
 
@@ -1467,27 +1397,6 @@ function setupControlListeners() {
     rightZone.addEventListener('pointerup', releaseJoystick);
     rightZone.addEventListener('pointercancel', releaseJoystick);
 
-    // Left Zone: Touch & Hold Brake
-    leftZone.addEventListener('pointerdown', (e) => {
-        if (!isPlaying || !screenActive) return;
-        
-        brakeTouchId = e.pointerId;
-        leftZone.setPointerCapture(e.pointerId);
-        
-        isBraking = true;
-        leftZone.classList.add('brake-active');
-    });
-
-    const releaseBrake = (e) => {
-        if (brakeTouchId !== e.pointerId) return;
-        brakeTouchId = null;
-        isBraking = false;
-        leftZone.classList.remove('brake-active');
-    };
-
-    leftZone.addEventListener('pointerup', releaseBrake);
-    leftZone.addEventListener('pointercancel', releaseBrake);
-
     // 6. Keyboard Desktop Controls
     window.addEventListener('keydown', (e) => {
         if (!isPlaying || !screenActive) return;
@@ -1509,10 +1418,6 @@ function setupControlListeners() {
             case 'KeyD':
                 keyDriveX = 1.0;
                 break;
-            case 'Space':
-                isBraking = true;
-                e.preventDefault(); // Stop window scrolling
-                break;
             case 'KeyH':
                 audio.playHonk();
                 break;
@@ -1532,9 +1437,6 @@ function setupControlListeners() {
             case 'ArrowRight':
             case 'KeyD':
                 keyDriveX = 0;
-                break;
-            case 'Space':
-                isBraking = false;
                 break;
         }
     });
@@ -1606,7 +1508,7 @@ function setupControlListeners() {
                 activeTouchId = null;
             }
             if (brakeTouchId !== null) {
-                leftZone.classList.remove('brake-active');
+                if (leftZone) leftZone.classList.remove('brake-active');
                 brakeTouchId = null;
             }
         }
@@ -1657,6 +1559,79 @@ function resetCar() {
 function angleDiff(a, b) {
     const diff = b - a;
     return Math.atan2(Math.sin(diff), Math.cos(diff));
+}
+
+// Resolution for collisions against boundary mesas, cacti, and signposts
+function resolveCollisions() {
+    if (!carGroup) return;
+    const carRadius = 1.1;
+
+    // 1. Check against Cacti
+    for (let i = 0; i < cacti.length; i++) {
+        const cactus = cacti[i];
+        const scale = cactus.scale.x;
+        const cactusRadius = 0.75 * scale;
+        
+        const dx = carGroup.position.x - cactus.position.x;
+        const dz = carGroup.position.z - cactus.position.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        const minDist = carRadius + cactusRadius;
+        
+        if (dist < minDist) {
+            // Collision detected! Push car back
+            const overlap = minDist - dist;
+            const nx = dist > 0 ? dx / dist : 1;
+            const nz = dist > 0 ? dz / dist : 0;
+            
+            carGroup.position.x += nx * overlap;
+            carGroup.position.z += nz * overlap;
+            
+            // Soft bounce back and stop
+            speed = -speed * 0.15;
+        }
+    }
+
+    // 2. Check against Boundary Rocks
+    for (let i = 0; i < boundaryRocks.length; i++) {
+        const rock = boundaryRocks[i];
+        const rockRadius = rock.radius;
+        
+        const dx = carGroup.position.x - rock.x;
+        const dz = carGroup.position.z - rock.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        const minDist = carRadius + rockRadius;
+        
+        if (dist < minDist) {
+            // Collision detected! Push car back
+            const overlap = minDist - dist;
+            const nx = dist > 0 ? dx / dist : 1;
+            const nz = dist > 0 ? dz / dist : 0;
+            
+            carGroup.position.x += nx * overlap;
+            carGroup.position.z += nz * overlap;
+            
+            // Harder bounce
+            speed = -speed * 0.25;
+        }
+    }
+
+    // 3. Check against Route 66 Sign
+    const signX = -5;
+    const signZ = 50;
+    const signRadius = 0.6;
+    const dxSign = carGroup.position.x - signX;
+    const dzSign = carGroup.position.z - signZ;
+    const distSign = Math.sqrt(dxSign * dxSign + dzSign * dzSign);
+    const minDistSign = carRadius + signRadius;
+    if (distSign < minDistSign) {
+        const overlap = minDistSign - distSign;
+        const nx = distSign > 0 ? dxSign / distSign : 1;
+        const nz = distSign > 0 ? dzSign / distSign : 0;
+        
+        carGroup.position.x += nx * overlap;
+        carGroup.position.z += nz * overlap;
+        speed = -speed * 0.2;
+    }
 }
 
 // ==========================================================================
@@ -1720,7 +1695,7 @@ function updatePhysics() {
         if (speed < 0.002) speed = 0;
     }
 
-    // C. Resolve Brake decelerations
+    // C. Resolve Brake decelerations (Brakes are disabled, keeping for physics drag compatibility)
     if (isBraking) {
         speed = Math.max(0.0, speed - BRAKE_DECEL);
     }
@@ -1732,6 +1707,10 @@ function updatePhysics() {
 
     carGroup.position.x += moveX;
     carGroup.position.z += moveZ;
+    
+    // Resolve any obstacle or plant collisions before committing rotation
+    resolveCollisions();
+    
     carGroup.rotation.y = heading;
 
     // Keep car locked within boundary boundary circle
@@ -1741,7 +1720,6 @@ function updatePhysics() {
         carGroup.position.x = (carGroup.position.x / currentDist) * 165;
         carGroup.position.z = (carGroup.position.z / currentDist) * 165;
         speed *= -0.25; // bouncy collision!
-        audio.playHonk(); // cute warning beep
     }
 
     // E. Visual wheel rotations
@@ -1855,7 +1833,7 @@ function updatePhysics() {
 
     // J. Update HUD widgets (Optimized to prevent DOM layout recalculations)
     const mph = Math.round(speed * 120);
-    if (speedVal.textContent !== mph.toString()) {
+    if (speedVal && speedVal.textContent !== mph.toString()) {
         speedVal.textContent = mph;
     }
     
@@ -1869,7 +1847,7 @@ function updatePhysics() {
         const gear = Math.min(4, Math.floor(speed * 10) + 1);
         currentGear = gear.toString();
     }
-    if (gearVal.textContent !== currentGear) {
+    if (gearVal && gearVal.textContent !== currentGear) {
         gearVal.textContent = currentGear;
     }
 

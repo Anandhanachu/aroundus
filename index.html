@@ -107,27 +107,16 @@
 
                     <!-- Overlay HUD UI -->
                     <div class="game-hud" id="gameHUD">
-                        <!-- Speedometer Widget -->
-                        <div class="hud-widget speedometer">
-                            <div class="speed-value" id="speedVal">0</div>
-                            <div class="speed-unit">MPH</div>
-                            <div class="gear-indicator" id="gearVal">N</div>
-                        </div>
-
                         <!-- Instruction Overlay (Tap to start) -->
                         <div class="start-screen" id="startScreen">
                             <div class="start-title">
                                 <h1>CUTE CAR</h1>
                                 <p class="start-subtitle">Adventure World</p>
                             </div>
-                            <div class="instructions-panel">
+                            <div class="instructions-panel" style="display: flex; justify-content: center;">
                                 <div class="instruction-row">
-                                    <span class="action-side left-side">LEFT SIDE</span>
-                                    <span class="action-desc"><i class="fa-solid fa-circle-stop"></i> Touch & Hold to Brake</span>
-                                </div>
-                                <div class="instruction-row">
-                                    <span class="action-side right-side">RIGHT SIDE</span>
-                                    <span class="action-desc"><i class="fa-solid fa-circle-dot"></i> Drag Joystick to Drive & Steer</span>
+                                    <span class="action-side right-side">DRIVE</span>
+                                    <span class="action-desc"><i class="fa-solid fa-circle-dot"></i> Drag Right Side Joystick to Move & Steer</span>
                                 </div>
                             </div>
                             <button class="start-btn" id="startBtn">
@@ -137,13 +126,6 @@
 
                         <!-- Active Control Visualizers (Visible on Touch) -->
                         <div class="touch-zones">
-                            <!-- Left Brake Indicator Zone -->
-                            <div class="zone left-zone" id="leftZone">
-                                <div class="brake-indicator" id="brakeIndicator">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    <span>BRAKE</span>
-                                </div>
-                            </div>
                             <!-- Right Joystick Zone -->
                             <div class="zone right-zone" id="rightZone">
                                 <div class="joystick-ring" id="joyRing">
@@ -157,7 +139,7 @@
                             <button class="util-btn" id="resetBtn" title="Reset Car Position">
                                 <i class="fa-solid fa-arrows-spin"></i> Reset
                             </button>
-                            <button class="util-btn" id="muteBtn" title="Mute/Unmute Sounds">
+                            <button class="util-btn" id="muteBtn" title="Mute/Unmute Music">
                                 <i class="fa-solid fa-volume-high"></i>
                             </button>
                         </div>
@@ -179,7 +161,7 @@
         <!-- Simulator Instructions underneath -->
         <div class="simulator-instructions">
             <p><strong>Landscape Mode:</strong> Use your mouse like fingers to test the game.</p>
-            <p><kbd>Mouse Right Area Drag</kbd> acts as invisible Joystick. <kbd>Mouse Left Area Press</kbd> acts as Brake.</p>
+            <p>Drag on the right half of the screen to activate the virtual joystick to drive and steer.</p>
             <p>You can also use <kbd>Arrow Keys</kbd> or <kbd>WASD</kbd> on keyboard for desktop testing.</p>
             <p>Press the iPhone's <span style="color: #ff6b6b; font-weight: bold;">Power Button</span> on the right side to turn the phone screen on/off.</p>
         </div>
