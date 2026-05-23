@@ -315,6 +315,11 @@ function initEngine() {
     sunLight.shadow.bias = -0.0005;
     scene.add(sunLight);
 
+    // Cool-toned fill light from opposite side for premium 3D contrast
+    const fillLight = new THREE.DirectionalLight(0x80c5de, 0.45);
+    fillLight.position.set(-40, 30, -20);
+    scene.add(fillLight);
+
     // Build the World
     createDesertFloor();
     createDesertBoundary();
@@ -713,25 +718,32 @@ function createCuteCar() {
     carBodyGroup = new THREE.Group();
     carGroup.add(carBodyGroup);
 
-    // Materials
-    const bodyPaintMat = new THREE.MeshStandardMaterial({
+    // Materials - UPGRADED to physical materials for rich glossiness & reflections
+    const bodyPaintMat = new THREE.MeshPhysicalMaterial({
         color: 0xff4d6d, // Cute Figaro Light Cherry Red
-        roughness: 0.08,
-        metalness: 0.1,
+        roughness: 0.12,
+        metalness: 0.15,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.1
+        clearcoatRoughness: 0.05,
+        sheen: 0.8,
+        sheenColor: new THREE.Color(0xff88a8),
+        sheenRoughness: 0.15
     });
     
-    const creamWhiteMat = new THREE.MeshStandardMaterial({
-        color: 0xf5f5eb, // Retro cream white for canopy and mirrors
-        roughness: 0.15,
-        metalness: 0.05
+    const creamWhiteMat = new THREE.MeshPhysicalMaterial({
+        color: 0xfbfaf0, // Retro cream white for canopy and mirrors
+        roughness: 0.2,
+        metalness: 0.05,
+        clearcoat: 0.4,
+        clearcoatRoughness: 0.1
     });
 
-    const chromeMat = new THREE.MeshStandardMaterial({
-        color: 0xeaeaea,
-        roughness: 0.03,
-        metalness: 0.98
+    const chromeMat = new THREE.MeshPhysicalMaterial({
+        color: 0xf5f5f5,
+        roughness: 0.05,
+        metalness: 1.0,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.02
     });
 
     const tireMat = new THREE.MeshStandardMaterial({
@@ -751,10 +763,12 @@ function createCuteCar() {
     const pupilBlackMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
     const eyeHighlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-    const wheelWhiteMat = new THREE.MeshStandardMaterial({
+    const wheelWhiteMat = new THREE.MeshPhysicalMaterial({
         color: 0xfafafa, // White dish wheel covers
-        roughness: 0.12,
-        metalness: 0.05
+        roughness: 0.15,
+        metalness: 0.05,
+        clearcoat: 0.3,
+        clearcoatRoughness: 0.1
     });
 
     // 1. Lower Chassis (Rounded bubble body using a stretched sphere instead of a box!)
@@ -766,6 +780,46 @@ function createCuteCar() {
     bodyMesh.receiveShadow = true;
     carBodyGroup.add(bodyMesh);
 
+    // Chrome Side Beltline Trim Strip
+    const sideTrimGeo = new THREE.CylinderGeometry(0.015, 0.015, 2.0, 8);
+    sideTrimGeo.rotateX(Math.PI / 2); // align along Z
+    
+    const leftTrim = new THREE.Mesh(sideTrimGeo, chromeMat);
+    leftTrim.position.set(-0.91, 0.45, 0);
+    carBodyGroup.add(leftTrim);
+    
+    const rightTrim = leftTrim.clone();
+    rightTrim.position.x = 0.91;
+    carBodyGroup.add(rightTrim);
+
+    // Chrome Door Handles and Bases
+    const handleGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.18, 8);
+    handleGeo.rotateX(Math.PI / 2);
+    
+    const leftHandle = new THREE.Mesh(handleGeo, chromeMat);
+    leftHandle.position.set(-0.925, 0.52, -0.1);
+    carBodyGroup.add(leftHandle);
+    
+    const rightHandle = leftHandle.clone();
+    rightHandle.position.x = 0.925;
+    carBodyGroup.add(rightHandle);
+    
+    const handleBaseGeo = new THREE.BoxGeometry(0.01, 0.03, 0.22);
+    const leftHandleBase = new THREE.Mesh(handleBaseGeo, chromeMat);
+    leftHandleBase.position.set(-0.92, 0.52, -0.1);
+    carBodyGroup.add(leftHandleBase);
+    
+    const rightHandleBase = leftHandleBase.clone();
+    rightHandleBase.position.x = 0.92;
+    carBodyGroup.add(rightHandleBase);
+
+    // Chrome Gas Cap (placed on rear left flank)
+    const gasCapGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.015, 12);
+    gasCapGeo.rotateZ(Math.PI / 2);
+    const gasCap = new THREE.Mesh(gasCapGeo, chromeMat);
+    gasCap.position.set(-0.85, 0.52, -1.0);
+    carBodyGroup.add(gasCap);
+
     // 2. Front Hood (Stretched sphere for bubbly retro hood!)
     const hoodGeo = new THREE.SphereGeometry(1.0, 24, 24);
     const hoodMesh = new THREE.Mesh(hoodGeo, bodyPaintMat);
@@ -773,6 +827,31 @@ function createCuteCar() {
     hoodMesh.position.set(0, 0.36, 0.88);
     hoodMesh.castShadow = true;
     carBodyGroup.add(hoodMesh);
+
+    // Chrome hood center trim strip
+    const hoodStripGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.85, 8);
+    hoodStripGeo.rotateX(Math.PI / 2); // align along Z
+    const hoodStrip = new THREE.Mesh(hoodStripGeo, chromeMat);
+    hoodStrip.position.set(0, 0.54, 0.92);
+    hoodStrip.rotation.x = 0.22; // Match hood slope
+    carBodyGroup.add(hoodStrip);
+    
+    // Hood Emblem/Badge
+    const badgeGroup = new THREE.Group();
+    badgeGroup.position.set(0, 0.46, 1.34);
+    badgeGroup.rotation.x = 0.25; // align with hood slope
+    
+    const badgeBackingGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.02, 12);
+    badgeBackingGeo.rotateX(Math.PI / 2);
+    const badgeBacking = new THREE.Mesh(badgeBackingGeo, chromeMat);
+    badgeGroup.add(badgeBacking);
+    
+    const badgeWingGeo = new THREE.BoxGeometry(0.18, 0.02, 0.01);
+    const badgeWing = new THREE.Mesh(badgeWingGeo, chromeMat);
+    badgeWing.position.z = 0.005;
+    badgeGroup.add(badgeWing);
+    
+    carBodyGroup.add(badgeGroup);
 
     // 3. Two-Tone Cream White Canopy Roof (Nissan Figaro signature - bubbly dome!)
     const canopyGeo = new THREE.SphereGeometry(1.0, 24, 24);
@@ -782,6 +861,13 @@ function createCuteCar() {
     canopy.castShadow = true;
     carBodyGroup.add(canopy);
 
+    // Windshield chrome frame outline
+    const windshieldFrameGeo = new THREE.BoxGeometry(1.1, 0.56, 0.03);
+    const windshieldFrame = new THREE.Mesh(windshieldFrameGeo, chromeMat);
+    windshieldFrame.position.set(0, 0.84, 0.47);
+    windshieldFrame.rotation.x = -0.42;
+    carBodyGroup.add(windshieldFrame);
+
     // Windshield frame (White base for eyes)
     const windshieldGeo = new THREE.PlaneGeometry(1.05, 0.52);
     const windshield = new THREE.Mesh(windshieldGeo, glassMat);
@@ -789,6 +875,13 @@ function createCuteCar() {
     windshield.position.set(0, 0.84, 0.48);
     windshield.rotation.x = -0.42; // slightly steeper slope
     carBodyGroup.add(windshield);
+
+    // Windshield Eyelid Brow in body paint color (gives character expressions)
+    const browGeo = new THREE.BoxGeometry(1.08, 0.12, 0.02);
+    const brow = new THREE.Mesh(browGeo, bodyPaintMat);
+    brow.position.set(0, 1.02, 0.41);
+    brow.rotation.x = -0.42;
+    carBodyGroup.add(brow);
 
     // Expressive Eyes Setup
     const eyeGroup = new THREE.Group();
@@ -892,6 +985,19 @@ function createCuteCar() {
     rightHousing.position.x = 0.55;
     carBodyGroup.add(rightHousing);
 
+    // Headlight Chrome Eyelids (Visors)
+    const eyelidGeo = new THREE.SphereGeometry(0.23, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    eyelidGeo.rotateX(-Math.PI / 2); // align forward
+    
+    const leftEyelid = new THREE.Mesh(eyelidGeo, chromeMat);
+    leftEyelid.position.set(-0.55, 0.44, 1.35);
+    leftEyelid.rotation.x = 0.22; // Tilt down over headlight slightly
+    carBodyGroup.add(leftEyelid);
+    
+    const rightEyelid = leftEyelid.clone();
+    rightEyelid.position.x = 0.55;
+    carBodyGroup.add(rightEyelid);
+
     // Glowing headlight lens
     const lensGeo = new THREE.SphereGeometry(0.16, 12, 12);
     const lensMat = new THREE.MeshStandardMaterial({
@@ -909,6 +1015,31 @@ function createCuteCar() {
     const rightLens = leftLens.clone();
     rightLens.position.x = 0.55;
     carBodyGroup.add(rightLens);
+
+    // Volumetric Headlight Beams (soft cone of light)
+    const beamGeo = new THREE.CylinderGeometry(0.12, 0.6, 4.0, 16, 1, true);
+    beamGeo.rotateX(Math.PI / 2);
+    beamGeo.translate(0, 0, 2.0); // Shift so pivot is at headlight
+    
+    const beamMat = new THREE.MeshBasicMaterial({
+        color: 0xfffee4,
+        transparent: true,
+        opacity: 0.08,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+    
+    const leftBeam = new THREE.Mesh(beamGeo, beamMat);
+    leftBeam.position.set(-0.55, 0.44, 1.48);
+    leftBeam.rotation.y = 0.04; // angle slightly outward
+    leftBeam.rotation.x = -0.02; // angle slightly downward
+    carBodyGroup.add(leftBeam);
+    
+    const rightBeam = leftBeam.clone();
+    rightBeam.position.x = 0.55;
+    rightBeam.rotation.y = -0.04;
+    carBodyGroup.add(rightBeam);
 
     // 6. Retro Chrome Front Bumper Bar (with rounded end caps)
     const bumperGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.7, 10);
@@ -950,26 +1081,37 @@ function createCuteCar() {
     rightHead.position.x = 0.89;
     carBodyGroup.add(rightHead);
 
-    // 8. Smiling Radiator Mouth (on bumper lower snout)
+    // 8. Smiling Radiator Mouth (High-Res 512x256 vector-smooth style)
     const smileCanvas = document.createElement('canvas');
-    smileCanvas.width = 128;
-    smileCanvas.height = 64;
+    smileCanvas.width = 512;
+    smileCanvas.height = 256;
     const smCtx = smileCanvas.getContext('2d');
+    smCtx.clearRect(0, 0, 512, 256);
 
-    // Happy open mouth smile
+    // Happy open mouth smile with thick black border
     smCtx.fillStyle = '#1c1c1f';
+    smCtx.strokeStyle = '#000000';
+    smCtx.lineWidth = 12;
+    
     smCtx.beginPath();
-    smCtx.arc(64, 12, 40, 0, Math.PI);
+    smCtx.arc(256, 48, 160, 0, Math.PI);
+    smCtx.fill();
+    smCtx.stroke();
+
+    // Teeth
+    smCtx.fillStyle = '#ffffff';
+    smCtx.beginPath();
+    if (smCtx.roundRect) {
+        smCtx.roundRect(136, 48, 240, 40, 10);
+    } else {
+        smCtx.rect(136, 48, 240, 40);
+    }
     smCtx.fill();
 
-    smCtx.fillStyle = '#ffffff'; // Teeth
+    // Tongue
+    smCtx.fillStyle = '#ff6b6b';
     smCtx.beginPath();
-    smCtx.rect(34, 12, 60, 10);
-    smCtx.fill();
-
-    smCtx.fillStyle = '#ff6b6b'; // Tongue
-    smCtx.beginPath();
-    smCtx.arc(64, 38, 14, 0, Math.PI);
+    smCtx.arc(256, 152, 56, 0, Math.PI);
     smCtx.fill();
 
     const mouthTex = new THREE.CanvasTexture(smileCanvas);
@@ -1014,7 +1156,70 @@ function createCuteCar() {
         rightLight: rightTailLight
     };
 
-    // 11. Retro Nissan Figaro Wheels Setup (Tires are cylinders, white dish is cylinder, chrome cap is cylinder)
+    // Rear Chrome Bumper Bar
+    const rearBumperGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.6, 10);
+    rearBumperGeo.rotateZ(Math.PI / 2);
+    const rearBumper = new THREE.Mesh(rearBumperGeo, chromeMat);
+    rearBumper.position.set(0, 0.14, -1.55);
+    rearBumper.castShadow = true;
+    carBodyGroup.add(rearBumper);
+    
+    const rearLeftCap = new THREE.Mesh(capGeo, chromeMat);
+    rearLeftCap.position.set(-0.8, 0.14, -1.55);
+    carBodyGroup.add(rearLeftCap);
+    
+    const rearRightCap = rearLeftCap.clone();
+    rearRightCap.position.x = 0.8;
+    carBodyGroup.add(rearRightCap);
+
+    // FRONT & REAR LICENSE PLATES
+    const plateBackingGeo = new THREE.BoxGeometry(0.44, 0.22, 0.02);
+    
+    const lpCanvas = document.createElement('canvas');
+    lpCanvas.width = 128;
+    lpCanvas.height = 64;
+    const lpCtx = lpCanvas.getContext('2d');
+    lpCtx.fillStyle = '#ffcc00'; // Retro JDM yellow
+    lpCtx.fillRect(0, 0, 128, 64);
+    lpCtx.strokeStyle = '#111111';
+    lpCtx.lineWidth = 4;
+    lpCtx.strokeRect(2, 2, 124, 60);
+    lpCtx.fillStyle = '#111111';
+    lpCtx.font = 'bold 28px monospace';
+    lpCtx.textAlign = 'center';
+    lpCtx.textBaseline = 'middle';
+    lpCtx.fillText('CUTE 66', 64, 32);
+    
+    const lpTex = new THREE.CanvasTexture(lpCanvas);
+    const plateTextGeo = new THREE.PlaneGeometry(0.4, 0.18);
+    const plateTextMat = new THREE.MeshStandardMaterial({ map: lpTex, roughness: 0.15 });
+
+    // Rear Plate Group
+    const rearPlateGroup = new THREE.Group();
+    rearPlateGroup.position.set(0, 0.24, -1.58);
+    rearPlateGroup.rotation.y = Math.PI; // Face backwards
+    
+    const rearPlateBacking = new THREE.Mesh(plateBackingGeo, chromeMat);
+    rearPlateGroup.add(rearPlateBacking);
+    
+    const rearPlateText = new THREE.Mesh(plateTextGeo, plateTextMat);
+    rearPlateText.position.z = 0.011;
+    rearPlateGroup.add(rearPlateText);
+    carBodyGroup.add(rearPlateGroup);
+
+    // Front Plate Group (mounted offset to side, JDM Figaro style)
+    const frontPlateGroup = new THREE.Group();
+    frontPlateGroup.position.set(0.4, 0.04, 1.63);
+    
+    const frontPlateBacking = new THREE.Mesh(plateBackingGeo, chromeMat);
+    frontPlateGroup.add(frontPlateBacking);
+    
+    const frontPlateText = new THREE.Mesh(plateTextGeo, plateTextMat);
+    frontPlateText.position.z = 0.011;
+    frontPlateGroup.add(frontPlateText);
+    carBodyGroup.add(frontPlateGroup);
+
+    // 11. Retro Nissan Figaro Wheels Setup (Tires, white dish, chrome cap, red pinstripe torus)
     const wheelGeo = new THREE.CylinderGeometry(WHEEL_RADIUS, WHEEL_RADIUS, 0.38, 18);
     wheelGeo.rotateZ(Math.PI / 2);
 
@@ -1031,6 +1236,18 @@ function createCuteCar() {
         dishGeo.rotateZ(Math.PI / 2);
         const dish = new THREE.Mesh(dishGeo, wheelWhiteMat);
         wGroup.add(dish);
+
+        // Red Pinstripe Torus (on outer & inner dish faces)
+        const stripeGeo = new THREE.TorusGeometry(0.22, 0.015, 8, 32);
+        stripeGeo.rotateY(Math.PI / 2); // face along cylinder caps
+        
+        const stripeOuter = new THREE.Mesh(stripeGeo, bodyPaintMat);
+        stripeOuter.position.x = 0.196;
+        wGroup.add(stripeOuter);
+        
+        const stripeInner = new THREE.Mesh(stripeGeo, bodyPaintMat);
+        stripeInner.position.x = -0.196;
+        wGroup.add(stripeInner);
 
         // Chrome Center Hubcap
         const centerCapGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.4, 10);
