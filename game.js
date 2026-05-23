@@ -715,33 +715,33 @@ function createCuteCar() {
 
     // Materials
     const bodyPaintMat = new THREE.MeshStandardMaterial({
-        color: 0xe62a19, // Disney Red
+        color: 0xff4d6d, // Cute Figaro Light Cherry Red
         roughness: 0.08,
-        metalness: 0.15,
-        clearcoat: 1.0,  // Gloss shine
+        metalness: 0.1,
+        clearcoat: 1.0,
         clearcoatRoughness: 0.1
     });
     
-    const bodyYellowPaintMat = new THREE.MeshStandardMaterial({
-        color: 0xfcb003, // Lightning McQueen Lightning side color
-        roughness: 0.1,
-        metalness: 0.1
+    const creamWhiteMat = new THREE.MeshStandardMaterial({
+        color: 0xf5f5eb, // Retro cream white for canopy and mirrors
+        roughness: 0.15,
+        metalness: 0.05
     });
 
     const chromeMat = new THREE.MeshStandardMaterial({
-        color: 0xdddddd,
-        roughness: 0.05,
-        metalness: 0.95
+        color: 0xeaeaea,
+        roughness: 0.03,
+        metalness: 0.98
     });
 
     const tireMat = new THREE.MeshStandardMaterial({
-        color: 0x222226,
+        color: 0x1c1c1f,
         roughness: 0.9,
         metalness: 0.0
     });
 
     const glassMat = new THREE.MeshStandardMaterial({
-        color: 0xffffff, // Windshield body is white so eyes pop
+        color: 0xffffff, // Windshield white base
         roughness: 0.1,
         metalness: 0.1
     });
@@ -751,74 +751,73 @@ function createCuteCar() {
     const pupilBlackMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
     const eyeHighlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-    const bumperMouthMat = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        roughness: 0.2
+    const wheelWhiteMat = new THREE.MeshStandardMaterial({
+        color: 0xfafafa, // White dish wheel covers
+        roughness: 0.12,
+        metalness: 0.05
     });
 
-    // 1. Lower Chassis (Boxy but rounded looking)
-    const chassisGeo = new THREE.BoxGeometry(1.85, 0.55, 3.2);
+    // 1. Lower Chassis (Rounded Retro Body)
+    const chassisGeo = new THREE.BoxGeometry(1.85, 0.52, 3.1);
     const chassis = new THREE.Mesh(chassisGeo, bodyPaintMat);
     chassis.position.y = 0.35;
     chassis.castShadow = true;
     chassis.receiveShadow = true;
     carBodyGroup.add(chassis);
 
-    // 2. Front Hood/Nout (Tapers forward)
-    const hoodGeo = new THREE.BoxGeometry(1.8, 0.45, 1.1);
+    // 2. Front Hood/Nose (Tapers forward slightly)
+    const hoodGeo = new THREE.BoxGeometry(1.78, 0.42, 1.05);
     const hood = new THREE.Mesh(hoodGeo, bodyPaintMat);
-    hood.position.set(0, 0.3, 1.25);
+    hood.position.set(0, 0.3, 1.2);
     hood.castShadow = true;
     carBodyGroup.add(hood);
 
-    // Cute nose curve block
-    const noseGeo = new THREE.BoxGeometry(1.65, 0.35, 0.35);
+    // Rounded nose curve front bumper face
+    const noseGeo = new THREE.BoxGeometry(1.6, 0.3, 0.3);
     const nose = new THREE.Mesh(noseGeo, bodyPaintMat);
-    nose.position.set(0, 0.18, 1.8);
+    nose.position.set(0, 0.15, 1.7);
     nose.castShadow = true;
     carBodyGroup.add(nose);
 
-    // 3. Cabin (Middle upper block)
-    const cabinGeo = new THREE.BoxGeometry(1.5, 0.75, 1.55);
-    const cabin = new THREE.Mesh(cabinGeo, bodyPaintMat);
-    cabin.position.set(0, 0.8, -0.2);
-    cabin.castShadow = true;
-    carBodyGroup.add(cabin);
+    // 3. Two-Tone Cream White Canopy Roof (Nissan Figaro signature)
+    const canopyGeo = new THREE.BoxGeometry(1.42, 0.72, 1.6);
+    const canopy = new THREE.Mesh(canopyGeo, creamWhiteMat);
+    canopy.position.set(0, 0.85, -0.2);
+    canopy.castShadow = true;
+    carBodyGroup.add(canopy);
 
     // Windshield frame (White base for eyes)
-    const windshieldGeo = new THREE.PlaneGeometry(1.36, 0.64);
+    const windshieldGeo = new THREE.PlaneGeometry(1.28, 0.62);
     const windshield = new THREE.Mesh(windshieldGeo, glassMat);
-    // Angled back slightly, placed at front face of cabin
-    windshield.position.set(0, 0.85, 0.59);
+    windshield.position.set(0, 0.88, 0.61);
     windshield.rotation.x = -0.32;
     carBodyGroup.add(windshield);
 
     // Expressive Eyes Setup
     const eyeGroup = new THREE.Group();
-    // Move slightly forward of windshield to avoid Z-fighting
-    eyeGroup.position.set(0, 0.85, 0.60);
+    eyeGroup.position.set(0, 0.88, 0.62);
     eyeGroup.rotation.x = -0.32;
     carBodyGroup.add(eyeGroup);
 
     // Eye whites
-    const eyeWhiteGeo = new THREE.CircleGeometry(0.24, 24);
+    const eyeWhiteGeo = new THREE.CircleGeometry(0.22, 24);
     
     const leftEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyesBaseMat);
-    leftEyeWhite.position.set(-0.3, 0, 0);
+    leftEyeWhite.position.set(-0.28, 0, 0);
     eyeGroup.add(leftEyeWhite);
 
     const rightEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyesBaseMat);
-    rightEyeWhite.position.set(0.3, 0, 0);
+    rightEyeWhite.position.set(0.28, 0, 0);
     eyeGroup.add(rightEyeWhite);
 
     // Pupil structures
-    const pupilBaseGeo = new THREE.CircleGeometry(0.12, 16);
-    const pupilCoreGeo = new THREE.CircleGeometry(0.06, 16);
-    const shineGeo = new THREE.CircleGeometry(0.024, 12);
+    const pupilBaseGeo = new THREE.CircleGeometry(0.11, 16);
+    const pupilCoreGeo = new THREE.CircleGeometry(0.05, 16);
+    const shineGeo = new THREE.CircleGeometry(0.022, 12);
 
     // Left Pupil
     leftPupil = new THREE.Group();
-    leftPupil.position.set(-0.3, 0, 0.005);
+    leftPupil.position.set(-0.28, 0, 0.005);
     
     const lpBlue = new THREE.Mesh(pupilBaseGeo, pupilBlueMat);
     leftPupil.add(lpBlue);
@@ -826,14 +825,13 @@ function createCuteCar() {
     lpBlack.position.z = 0.001;
     leftPupil.add(lpBlack);
     const lpShine = new THREE.Mesh(shineGeo, eyeHighlightMat);
-    lpShine.position.set(0.04, 0.04, 0.002);
+    lpShine.position.set(0.035, 0.035, 0.002);
     leftPupil.add(lpShine);
-    
     eyeGroup.add(leftPupil);
 
     // Right Pupil
     rightPupil = new THREE.Group();
-    rightPupil.position.set(0.3, 0, 0.005);
+    rightPupil.position.set(0.28, 0, 0.005);
     
     const rpBlue = new THREE.Mesh(pupilBaseGeo, pupilBlueMat);
     rightPupil.add(rpBlue);
@@ -841,92 +839,155 @@ function createCuteCar() {
     rpBlack.position.z = 0.001;
     rightPupil.add(rpBlack);
     const rpShine = new THREE.Mesh(shineGeo, eyeHighlightMat);
-    rpShine.position.set(0.04, 0.04, 0.002);
+    rpShine.position.set(0.035, 0.035, 0.002);
     rightPupil.add(rpShine);
-
     eyeGroup.add(rightPupil);
 
-    // 4. Rear Spoiler (Disney Cars signature!)
-    const spoilerLeftSupportGeo = new THREE.BoxGeometry(0.1, 0.45, 0.25);
-    const spoilerLeft = new THREE.Mesh(spoilerLeftSupportGeo, bodyPaintMat);
-    spoilerLeft.position.set(-0.7, 0.8, -1.35);
-    carBodyGroup.add(spoilerLeft);
+    // 4. Nissan Figaro Front Grille (Oval Chrome Mesh)
+    const grilleCanvas = document.createElement('canvas');
+    grilleCanvas.width = 128;
+    grilleCanvas.height = 64;
+    const gCtx = grilleCanvas.getContext('2d');
+    gCtx.fillStyle = '#1a1a1a';
+    gCtx.fillRect(0, 0, 128, 64);
+    
+    // Draw chrome grid
+    gCtx.strokeStyle = '#d5d5d5';
+    gCtx.lineWidth = 3.5;
+    for (let i = -64; i < 128; i += 16) {
+        gCtx.beginPath();
+        gCtx.moveTo(i, 0);
+        gCtx.lineTo(i + 64, 64);
+        gCtx.stroke();
+        
+        gCtx.beginPath();
+        gCtx.moveTo(i + 64, 0);
+        gCtx.lineTo(i, 64);
+        gCtx.stroke();
+    }
 
-    const spoilerRight = spoilerLeft.clone();
-    spoilerRight.position.x = 0.7;
-    carBodyGroup.add(spoilerRight);
+    const grilleTex = new THREE.CanvasTexture(grilleCanvas);
+    const grilleGeo = new THREE.BoxGeometry(1.15, 0.42, 0.04);
+    const grilleMat = new THREE.MeshStandardMaterial({
+        map: grilleTex,
+        roughness: 0.1,
+        metalness: 0.8
+    });
+    const grille = new THREE.Mesh(grilleGeo, grilleMat);
+    grille.position.set(0, 0.22, 1.71);
+    carBodyGroup.add(grille);
 
-    const wingGeo = new THREE.BoxGeometry(1.85, 0.1, 0.5);
-    const wing = new THREE.Mesh(wingGeo, bodyPaintMat);
-    wing.position.set(0, 1.05, -1.35);
-    wing.rotation.x = -0.15; // angled down slightly
-    wing.castShadow = true;
-    carBodyGroup.add(wing);
+    // Chrome border trim around the grille
+    const trimGeo = new THREE.BoxGeometry(1.23, 0.48, 0.02);
+    const trim = new THREE.Mesh(trimGeo, chromeMat);
+    trim.position.set(0, 0.22, 1.70);
+    carBodyGroup.add(trim);
 
-    // 5. Smiling Radiator Mouth on Bumper
+    // 5. Classic Figaro Round Headlights
+    // Chrome housings sticking up from fenders
+    const lightHousingGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.32, 14);
+    lightHousingGeo.rotateX(Math.PI / 2); // Point forward
+    
+    const leftHousing = new THREE.Mesh(lightHousingGeo, chromeMat);
+    leftHousing.position.set(-0.62, 0.48, 1.48);
+    leftHousing.castShadow = true;
+    carBodyGroup.add(leftHousing);
+
+    const rightHousing = leftHousing.clone();
+    rightHousing.position.x = 0.62;
+    carBodyGroup.add(rightHousing);
+
+    // Glowing headlight lens
+    const lensGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.05, 14);
+    lensGeo.rotateX(Math.PI / 2);
+    const lensMat = new THREE.MeshStandardMaterial({
+        color: 0xfffee4,
+        emissive: 0xfffaab,
+        emissiveIntensity: 0.8,
+        roughness: 0.05
+    });
+
+    const leftLens = new THREE.Mesh(lensGeo, lensMat);
+    leftLens.position.set(-0.62, 0.48, 1.63);
+    carBodyGroup.add(leftLens);
+
+    const rightLens = leftLens.clone();
+    rightLens.position.x = 0.62;
+    carBodyGroup.add(rightLens);
+
+    // 6. Retro Chrome Front Bumper Bar
+    const bumperGeo = new THREE.CylinderGeometry(0.05, 0.05, 1.9, 10);
+    bumperGeo.rotateZ(Math.PI / 2); // Make horizontal
+    const frontBumper = new THREE.Mesh(bumperGeo, chromeMat);
+    frontBumper.position.set(0, 0.12, 1.83);
+    frontBumper.castShadow = true;
+    carBodyGroup.add(frontBumper);
+
+    // 7. Side Mirrors (Mounted on door/canopy sides)
+    const mirrorStemGeo = new THREE.CylinderGeometry(0.024, 0.024, 0.34, 8);
+    const leftStem = new THREE.Mesh(mirrorStemGeo, chromeMat);
+    leftStem.position.set(-0.84, 0.62, 0.38);
+    leftStem.rotation.z = -Math.PI / 8; // Angle outward
+    carBodyGroup.add(leftStem);
+
+    const rightStem = leftStem.clone();
+    rightStem.position.x = 0.84;
+    rightStem.rotation.z = Math.PI / 8;
+    carBodyGroup.add(rightStem);
+
+    const mirrorHeadGeo = new THREE.SphereGeometry(0.12, 10, 10);
+    const leftHead = new THREE.Mesh(mirrorHeadGeo, creamWhiteMat);
+    leftHead.position.set(-0.94, 0.77, 0.38);
+    leftHead.scale.set(1.2, 0.8, 1.0); // Oval/ Figaro shape
+    carBodyGroup.add(leftHead);
+
+    const rightHead = leftHead.clone();
+    rightHead.position.x = 0.94;
+    carBodyGroup.add(rightHead);
+
+    // 8. Smiling Radiator Mouth (on bumper lower snout)
     const smileCanvas = document.createElement('canvas');
     smileCanvas.width = 128;
     smileCanvas.height = 64;
     const smCtx = smileCanvas.getContext('2d');
 
-    // Draw cute happy smile with teeth showing
-    smCtx.fillStyle = '#222222';
+    // Happy open mouth smile
+    smCtx.fillStyle = '#1c1c1f';
     smCtx.beginPath();
-    smCtx.arc(64, 15, 45, 0, Math.PI);
+    smCtx.arc(64, 12, 40, 0, Math.PI);
     smCtx.fill();
 
-    // White teeth insert
-    smCtx.fillStyle = '#ffffff';
+    smCtx.fillStyle = '#ffffff'; // Teeth
     smCtx.beginPath();
-    smCtx.rect(32, 15, 64, 12);
+    smCtx.rect(34, 12, 60, 10);
     smCtx.fill();
 
-    // Red tongue
-    smCtx.fillStyle = '#ff6b6b';
+    smCtx.fillStyle = '#ff6b6b'; // Tongue
     smCtx.beginPath();
-    smCtx.arc(64, 40, 16, 0, Math.PI);
+    smCtx.arc(64, 38, 14, 0, Math.PI);
     smCtx.fill();
 
     const mouthTex = new THREE.CanvasTexture(smileCanvas);
-    const mouthGeo = new THREE.PlaneGeometry(1.1, 0.55);
+    const mouthGeo = new THREE.PlaneGeometry(0.85, 0.42);
     const mouthMat = new THREE.MeshStandardMaterial({
         map: mouthTex,
         transparent: true,
         roughness: 0.15
     });
     const mouth = new THREE.Mesh(mouthGeo, mouthMat);
-    mouth.position.set(0, 0.18, 1.98);
-    // Align with angled front bumper surface
-    mouth.rotation.x = 0.04;
+    mouth.position.set(0, 0.08, 1.84); // Mounted right in front of bumper bar
+    mouth.rotation.x = 0.02;
     carBodyGroup.add(mouth);
 
-    // 6. Side lightning decals (Lightning McQueen style)
-    const decalGeo = new THREE.BoxGeometry(0.02, 0.2, 1.3);
-    const decalLeft = new THREE.Mesh(decalGeo, bodyYellowPaintMat);
-    decalLeft.position.set(-0.935, 0.35, 0.1);
-    decalLeft.rotation.y = 0.02;
-    decalLeft.rotation.z = -0.15;
-    carBodyGroup.add(decalLeft);
+    // 9. Shiny Chrome Exhaust pipe at rear
+    const tailpipeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.7, 8);
+    const tailpipe = new THREE.Mesh(tailpipeGeo, chromeMat);
+    tailpipe.rotation.x = Math.PI / 2;
+    tailpipe.position.set(-0.6, 0.12, -1.6);
+    carBodyGroup.add(tailpipe);
 
-    const decalRight = decalLeft.clone();
-    decalRight.position.x = 0.935;
-    decalRight.rotation.y = -0.02;
-    decalRight.rotation.z = 0.15;
-    carBodyGroup.add(decalRight);
-
-    // 7. Shiny Chrome exhaust pipes
-    const tailpipeGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 8);
-    const tailpipeLeft = new THREE.Mesh(tailpipeGeo, chromeMat);
-    tailpipeLeft.rotation.x = Math.PI / 2;
-    tailpipeLeft.position.set(-0.6, 0.15, -1.6);
-    carBodyGroup.add(tailpipeLeft);
-
-    const tailpipeRight = tailpipeLeft.clone();
-    tailpipeRight.position.x = 0.6;
-    carBodyGroup.add(tailpipeRight);
-
-    // 8. Glowing Brake Lights at rear corners
-    const tailLightGeo = new THREE.BoxGeometry(0.25, 0.15, 0.08);
+    // 10. Glowing Brake Lights at rear corners
+    const tailLightGeo = new THREE.BoxGeometry(0.24, 0.14, 0.06);
     const tailLightMat = new THREE.MeshStandardMaterial({
         color: 0x990000,
         emissive: 0xff0000,
@@ -935,69 +996,64 @@ function createCuteCar() {
     });
 
     const leftTailLight = new THREE.Mesh(tailLightGeo, tailLightMat);
-    leftTailLight.position.set(-0.75, 0.45, -1.6);
+    leftTailLight.position.set(-0.72, 0.4, -1.56);
     carBodyGroup.add(leftTailLight);
 
     const rightTailLight = leftTailLight.clone();
-    rightTailLight.position.x = 0.75;
+    rightTailLight.position.x = 0.72;
     carBodyGroup.add(rightTailLight);
 
-    // Save tail lights references to animate braking glow
     carBodyGroup.userData = {
         leftLight: leftTailLight,
         rightLight: rightTailLight
     };
 
-    // 9. Wheels Setup (Front Wheels pivot for steering!)
+    // 11. Retro Nissan Figaro Wheels Setup
+    // Black tire cylinder with solid white hub caps & chrome centers
     const wheelGeo = new THREE.CylinderGeometry(WHEEL_RADIUS, WHEEL_RADIUS, 0.38, 18);
-    wheelGeo.rotateZ(Math.PI / 2); // Orient cylinders along X axis
+    wheelGeo.rotateZ(Math.PI / 2);
 
-    // Add tire ridges to visual wheel spins
-    const spokeMat = new THREE.MeshStandardMaterial({ color: 0xdedede, roughness: 0.1, metalness: 0.8 });
-    const boltGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.4, 8);
-    boltGeo.rotateX(Math.PI / 2);
-
-    const createSpokedWheel = () => {
+    const createFigaroWheel = () => {
         const wGroup = new THREE.Group();
+        
+        // Tire
         const tire = new THREE.Mesh(wheelGeo, tireMat);
         tire.castShadow = true;
         wGroup.add(tire);
 
-        // Procedural Hubcap spokes
-        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.4, 12), spokeMat);
-        hub.rotation.z = Math.PI / 2;
-        wGroup.add(hub);
+        // Retro Solid White Dish Hubcap
+        const dishGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.39, 14);
+        dishGeo.rotateZ(Math.PI / 2);
+        const dish = new THREE.Mesh(dishGeo, wheelWhiteMat);
+        wGroup.add(dish);
 
-        // 4 wheel spikes to see visual rotations clearly
-        for (let j = 0; j < 4; j++) {
-            const bolt = new THREE.Mesh(boltGeo, spokeMat);
-            const rot = (j / 4) * Math.PI * 2;
-            bolt.position.set(0, Math.sin(rot) * 0.26, Math.cos(rot) * 0.26);
-            wGroup.add(bolt);
-        }
+        // Chrome Center Hubcap
+        const centerCapGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.4, 10);
+        centerCapGeo.rotateZ(Math.PI / 2);
+        const centerCap = new THREE.Mesh(centerCapGeo, chromeMat);
+        wGroup.add(centerCap);
+
         return wGroup;
     };
 
-    // Instantiate and place wheels
-    // We attach wheels to the main `carGroup` directly, so body bounce doesn't bounce the tires!
-    rearLeftWheel = createSpokedWheel();
+    // Place wheels directly on carGroup
+    rearLeftWheel = createFigaroWheel();
     rearLeftWheel.position.set(-1.0, 0.1, -0.85);
     carGroup.add(rearLeftWheel);
 
-    rearRightWheel = createSpokedWheel();
+    rearRightWheel = createFigaroWheel();
     rearRightWheel.position.set(1.0, 0.1, -0.85);
     carGroup.add(rearRightWheel);
 
-    // Front wheels have steering pivot groups!
     frontLeftWheel = new THREE.Group();
     frontLeftWheel.position.set(-1.0, 0.1, 0.95);
-    const flMesh = createSpokedWheel();
+    const flMesh = createFigaroWheel();
     frontLeftWheel.add(flMesh);
     carGroup.add(frontLeftWheel);
 
     frontRightWheel = new THREE.Group();
     frontRightWheel.position.set(1.0, 0.1, 0.95);
-    const frMesh = createSpokedWheel();
+    const frMesh = createFigaroWheel();
     frontRightWheel.add(frMesh);
     carGroup.add(frontRightWheel);
 }
@@ -1405,9 +1461,20 @@ function updatePhysics() {
 
     // B. Steering & Rotational Heading Logic
     if (hasInput && !isBraking) {
-        // Calculate target heading angle based on visual vector (X, Y)
-        // atan2(X, Y) matches Joystick: drag right(+X) -> turns car right (+heading)
-        const targetHeading = Math.atan2(finalInputX, finalInputY);
+        // Calculate camera forward and right vectors in horizontal X-Z plane
+        const camForwardX = -Math.sin(cameraYaw);
+        const camForwardZ = -Math.cos(cameraYaw);
+        const camRightX = Math.cos(cameraYaw);
+        const camRightZ = -Math.sin(cameraYaw);
+
+        // Project inputs relative to camera perspective
+        // Pushing UP (negative finalInputY) moves in camera forward direction.
+        // Pushing DOWN (positive finalInputY) moves in camera backward direction.
+        const moveVectorX = (finalInputX * camRightX) - (finalInputY * camForwardX);
+        const moveVectorZ = (finalInputX * camRightZ) - (finalInputY * camForwardZ);
+
+        // Calculate target heading angle based on visual move vector
+        const targetHeading = Math.atan2(moveVectorX, moveVectorZ);
         
         // Shortest angle turn wrap
         const diff = angleDiff(heading, targetHeading);
@@ -1461,8 +1528,9 @@ function updatePhysics() {
     // Spin wheels proportional to actual linear movement speed
     const rotationIncrement = speed / WHEEL_RADIUS;
     
-    rearLeftWheel.children[0].rotation.x += rotationIncrement;
-    rearRightWheel.children[0].rotation.x += rotationIncrement;
+    // Rotate the entire group for rear wheels (spins tire + solid white dish + chrome caps)
+    rearLeftWheel.rotation.x += rotationIncrement;
+    rearRightWheel.rotation.x += rotationIncrement;
     frontLeftWheel.children[0].rotation.x += rotationIncrement;
     frontRightWheel.children[0].rotation.x += rotationIncrement;
 
