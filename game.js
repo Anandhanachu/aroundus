@@ -258,7 +258,17 @@ const joyRing = document.getElementById('joyRing');
 const joyDot = document.getElementById('joyDot');
 const brakeIndicator = document.getElementById('brakeIndicator');
 
-// Camera Setup Parameters (Fixed angle look, does NOT rotate with car)
+// Camera Setup Parameters & Orbit State
+let cameraRadius = 23.36;
+let cameraYaw = 0.27; // Initial rotation angle
+let cameraPitch = 0.64; // Initial vertical angle
+const defaultPitch = 0.64;
+
+// Multitouch pinch-to-zoom tracking
+const activePointers = {};
+let initialPinchDist = null;
+let initialCameraRadius = 23.36;
+
 const cameraOffset = new THREE.Vector3(5, 14, 18);
 
 // Setup Canvas size
@@ -1252,6 +1262,108 @@ function setupControlListeners() {
                 break;
         }
     });
+
+    // 7. Camera Swipe-to-Rotate Control (Top Area)
+    const cameraZone = document.getElementById('cameraZone');
+    const iphoneScreen = document.getElementById('iphoneScreen');
+    let isRotatingCamera = false;
+    let lastRotateX = 0;
+    let lastRotateY = 0;
+
+    cameraZone.addEventListener('pointerdown', (e) => {
+        if (!isPlaying || !screenActive) return;
+        if (Object.keys(activePointers).length >= 2) return; // Ignore if zooming
+
+        isRotatingCamera = true;
+        cameraZone.setPointerCapture(e.pointerId);
+        lastRotateX = e.clientX;
+        lastRotateY = e.clientY;
+    });
+
+    cameraZone.addEventListener('pointermove', (e) => {
+        if (!isRotatingCamera || Object.keys(activePointers).length >= 2) return;
+
+        const dx = e.clientX - lastRotateX;
+        const dy = e.clientY - lastRotateY;
+
+        // Orbit calculation
+        cameraYaw -= dx * 0.0075;
+        cameraPitch = Math.max(0.12, Math.min(Math.PI / 2.1, cameraPitch + dy * 0.0075));
+
+        lastRotateX = e.clientX;
+        lastRotateY = e.clientY;
+    });
+
+    const releaseCameraRotation = (e) => {
+        isRotatingCamera = false;
+    };
+    cameraZone.addEventListener('pointerup', releaseCameraRotation);
+    cameraZone.addEventListener('pointercancel', releaseCameraRotation);
+
+    // Helper to calculate distance between two pointer touches
+    function getPinchDist(pts) {
+        const ids = Object.keys(pts);
+        const p1 = pts[ids[0]];
+        const p2 = pts[ids[1]];
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        return Math.sqrt(dx*dx + dy*dy);
+    }
+
+    // 8. Pinch-to-Zoom Multitouch listeners (Active anywhere inside the screen)
+    iphoneScreen.addEventListener('pointerdown', (e) => {
+        if (!isPlaying || !screenActive) return;
+        
+        activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        
+        if (Object.keys(activePointers).length === 2) {
+            initialPinchDist = getPinchDist(activePointers);
+            initialCameraRadius = cameraRadius;
+            
+            // Abort current driving inputs while zooming
+            isDriving = false;
+            isBraking = false;
+            driveInputX = 0;
+            driveInputY = 0;
+            if (activeTouchId !== null) {
+                joyRing.style.display = 'none';
+                activeTouchId = null;
+            }
+            if (brakeTouchId !== null) {
+                leftZone.classList.remove('brake-active');
+                brakeTouchId = null;
+            }
+        }
+    });
+
+    iphoneScreen.addEventListener('pointermove', (e) => {
+        if (activePointers[e.pointerId]) {
+            activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        }
+
+        if (Object.keys(activePointers).length === 2 && initialPinchDist) {
+            const currentDist = getPinchDist(activePointers);
+            if (currentDist > 5) {
+                const ratio = initialPinchDist / currentDist;
+                cameraRadius = Math.max(8, Math.min(65, initialCameraRadius * ratio));
+            }
+        }
+    });
+
+    const removePointer = (e) => {
+        delete activePointers[e.pointerId];
+        if (Object.keys(activePointers).length < 2) {
+            initialPinchDist = null;
+        }
+    };
+    iphoneScreen.addEventListener('pointerup', removePointer);
+    iphoneScreen.addEventListener('pointercancel', removePointer);
+
+    // 9. Desktop Mouse Wheel Zoom Support
+    iphoneScreen.addEventListener('wheel', (e) => {
+        if (!isPlaying || !screenActive) return;
+        cameraRadius = Math.max(8, Math.min(65, cameraRadius + e.deltaY * 0.035));
+    }, { passive: true });
 }
 
 function resetCar() {
@@ -1482,8 +1594,6 @@ function updatePhysics() {
 function updateCamera() {
     if (!carGroup) return;
 
-    // Interpolate camera to track the car with offset
-    // Camera is strictly isometric constant-direction look
     let targetCamPos;
     
     if (!isPlaying) {
@@ -1498,11 +1608,26 @@ function updateCamera() {
         camera.position.lerp(targetCamPos, 0.05);
         camera.lookAt(0, 5, 0);
     } else {
-        // Gameplay camera mode: follows car smoothly at constant compass offset
-        targetCamPos = carGroup.position.clone().add(cameraOffset);
+        // 1. Recenter camera automatically while moving
+        if (speed > 0.02) {
+            // Recenter behind the car's heading.
+            // Target yaw is heading + Math.PI (opposite of car forward direction)
+            const diff = angleDiff(cameraYaw, heading + Math.PI);
+            cameraYaw += diff * 0.015; // smooth auto recenter (slow pan)
+            
+            // Lerp pitch back to default
+            cameraPitch = THREE.MathUtils.lerp(cameraPitch, defaultPitch, 0.015);
+        }
+
+        // 2. Calculate offset coordinates from spherical coordinates
+        const camOffsetX = Math.sin(cameraYaw) * Math.cos(cameraPitch) * cameraRadius;
+        const camOffsetY = Math.sin(cameraPitch) * cameraRadius;
+        const camOffsetZ = Math.cos(cameraYaw) * Math.cos(cameraPitch) * cameraRadius;
+
+        targetCamPos = carGroup.position.clone().add(new THREE.Vector3(camOffsetX, camOffsetY, camOffsetZ));
         
         // Smooth lerp (lag) feels fluid and professional
-        camera.position.lerp(targetCamPos, 0.075);
+        camera.position.lerp(targetCamPos, 0.08);
         camera.lookAt(carGroup.position.x, carGroup.position.y + 1.2, carGroup.position.z);
     }
 }
