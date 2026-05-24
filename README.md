@@ -7,7 +7,7 @@ It is designed as a **Progressive Web App (PWA) style mobile web experience**, m
 ![Aroundus Game Screenshot](media__1779615518121.png) *(Note: Add a screenshot of the game here if you'd like!)*
 
 ## 🎮 Play the Game
-Play the live version here: **[Your GitHub Pages Link Here]**
+Play the live version here: **[https://anandhanachu.github.io/aroundus/](https://anandhanachu.github.io/aroundus/)**
 
 ## ✨ Features
 - **Responsive Mobile-First Design**: Adapts beautifully to mobile devices, automatically accounting for safe-area insets (like the iPhone dynamic island).
