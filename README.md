@@ -4,7 +4,7 @@
 
 It is designed as a **Progressive Web App (PWA) style mobile web experience**, meaning it dynamically expands to fill any screen—from desktop monitors to the latest smartphones—providing a native, full-screen gaming experience right in your browser.
 
-![Aroundus Game Screenshot](media__1779615518121.png) *(Note: Add a screenshot of the game here if you'd like!)*
+![Aroundus Game Screenshot](screenshot.png)
 
 ## 🎮 Play the Game
 Play the live version here: **[https://anandhanachu.github.io/aroundus/](https://anandhanachu.github.io/aroundus/)**
