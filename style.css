@@ -41,151 +41,6 @@ body {
 }
 
 /* ==========================================================================
-   Desktop Wrapper Environment
-   ========================================================================== */
-.desktop-wrapper {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    background: var(--bg-desktop);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-/* Soft desk lighting behind the simulator */
-.ambient-glow {
-    position: absolute;
-    width: 600px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(255, 94, 0, 0.15) 0%, rgba(255, 230, 0, 0.05) 50%, transparent 100%);
-    filter: blur(80px);
-    z-index: 1;
-    pointer-events: none;
-}
-
-/* ==========================================================================
-   iPhone 15/16 Pro Landscape Simulator
-   ========================================================================== */
-.iphone-container {
-    position: relative;
-    width: var(--sim-width);
-    height: var(--sim-height);
-    background: var(--titanium-bezel);
-    border-radius: 54px;
-    padding: 10px; /* Represents the metallic bezel width */
-    box-shadow: 
-        0 25px 50px -12px rgba(0, 0, 0, 0.7),
-        inset 0 2px 4px rgba(255, 255, 255, 0.4),
-        inset 0 -2px 4px rgba(0, 0, 0, 0.6);
-    z-index: 10;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* Hardware Buttons */
-.button {
-    position: absolute;
-    background: linear-gradient(to right, #48484a, #8e8e93, #48484a);
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    z-index: 5;
-    cursor: pointer;
-}
-
-/* Landscape orientation adjustments for buttons */
-/* Top edge: Volume & Action buttons */
-.action-button {
-    width: 32px;
-    height: 5px;
-    top: -5px;
-    left: 160px;
-}
-.volume-up {
-    width: 50px;
-    height: 5px;
-    top: -5px;
-    left: 220px;
-}
-.volume-down {
-    width: 50px;
-    height: 5px;
-    top: -5px;
-    left: 285px;
-}
-/* Right edge: Power button */
-.power-button {
-    width: 6px;
-    height: 80px;
-    right: -6px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: linear-gradient(to bottom, #48484a, #8e8e93, #48484a);
-    border-radius: 0 4px 4px 0;
-    transition: transform 0.1s ease;
-}
-.power-button:active {
-    transform: translateY(-50%) translateX(-2px);
-}
-
-/* Inner Screen Bezel */
-.iphone-bezel {
-    width: 100%;
-    height: 100%;
-    background: var(--screen-bezel-color);
-    border-radius: 46px;
-    padding: 6px; /* Inner black boundary */
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Screen Glass Area */
-.iphone-screen {
-    width: 100%;
-    height: 100%;
-    background: #000000;
-    border-radius: var(--screen-radius);
-    position: relative;
-    overflow: hidden;
-    touch-action: none; /* Prevent standard swipe/scroll gestures */
-}
-
-/* Dynamic Island (Left edge in landscape orientation) */
-.dynamic-island {
-    position: absolute;
-    width: 25px;
-    height: 85px;
-    background: #000000;
-    border-radius: 18px;
-    left: 24px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 100;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-around;
-    padding: 10px 0;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-.camera-lens {
-    width: 12px;
-    height: 12px;
-    background: radial-gradient(circle, #0e111a 0%, #03060f 70%, #1a233d 100%);
-    border-radius: 50%;
-    box-shadow: inset 0 0 2px rgba(255,255,255,0.4);
-}
-.sensor-dot {
-    width: 6px;
-    height: 6px;
-    background: #09090f;
-    border-radius: 50%;
-}
-
-/* ==========================================================================
    WebGL Canvas
    ========================================================================== */
 #gameCanvas {
@@ -199,80 +54,6 @@ body {
     touch-action: none;
 }
 
-/* ==========================================================================
-   iOS Status Bar (Landscape styled)
-   ========================================================================== */
-.ios-status-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 28px;
-    padding: 0 55px; /* Offset for dynamic island on left, rounded corners */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
-    z-index: 50;
-    pointer-events: none;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-}
-.status-left {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding-left: 20px; /* Offset to clear left curves */
-}
-.status-time {
-    letter-spacing: 0.2px;
-}
-.status-location {
-    font-size: 9px;
-}
-.status-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding-right: 15px; /* Offset to clear right curves */
-}
-.status-network {
-    font-weight: 800;
-    font-size: 9px;
-}
-.battery-icon {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-}
-.battery-level {
-    font-size: 9px;
-}
-.battery-body {
-    width: 20px;
-    height: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    border-radius: 3px;
-    padding: 1px;
-    position: relative;
-    display: flex;
-}
-.battery-fill {
-    width: 100%;
-    height: 100%;
-    background-color: var(--ios-active-color);
-    border-radius: 1px;
-}
-.battery-tip {
-    position: absolute;
-    right: -3px;
-    top: 2.5px;
-    width: 2px;
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.7);
-    border-radius: 0 1px 1px 0;
-}
 
 /* ==========================================================================
    Heads Up Display Overlay (HUD)
@@ -303,7 +84,7 @@ body {
 }
 .speedometer {
     bottom: 20px;
-    left: 80px; /* Shifted to clear dynamic island */
+    left: max(20px, env(safe-area-inset-left));
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -345,8 +126,8 @@ body {
 /* Mini-Map GPS */
 .minimap-container {
     position: absolute;
-    top: 38px;
-    right: 20px;
+    top: max(20px, env(safe-area-inset-top));
+    right: max(20px, env(safe-area-inset-right));
     left: auto;
     transform: none;
     width: 90px;
@@ -378,8 +159,8 @@ body {
 
 /* Coin Counter */
 .coin-counter {
-    top: 38px;
-    left: 80px; /* shift to clear dynamic island in landscape */
+    top: max(20px, env(safe-area-inset-top));
+    left: max(20px, env(safe-area-inset-left));
     font-weight: 800;
     font-size: 13px;
     display: flex;
@@ -400,8 +181,8 @@ body {
 
 /* Upgrade Widget */
 .upgrade-widget {
-    top: 86px;
-    left: 80px;
+    top: max(68px, calc(env(safe-area-inset-top) + 48px));
+    left: max(20px, env(safe-area-inset-left));
     display: flex;
     align-items: center;
     gap: 10px;
@@ -456,8 +237,8 @@ body {
 /* Quick Tools Menu */
 .quick-utils {
     position: absolute;
-    top: 38px;
-    right: 35px;
+    top: max(20px, env(safe-area-inset-top));
+    right: max(130px, calc(env(safe-area-inset-right) + 110px));
     display: flex;
     gap: 8px;
     pointer-events: auto;
@@ -693,98 +474,3 @@ body {
     transform: translateY(1px);
 }
 
-/* iPhone Screen Locked (Power button state) */
-.screen-off {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000000;
-    z-index: 150;
-    display: none; /* Controlled by Power button toggle */
-    justify-content: center;
-    align-items: center;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 13px;
-    pointer-events: auto;
-}
-.screen-off.active {
-    display: flex;
-}
-.charging-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    animation: pulse 3s infinite ease-in-out;
-}
-
-/* ==========================================================================
-   Home Indicator Bar (iOS Swipe Home bar in landscape)
-   ========================================================================== */
-.home-indicator {
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 140px;
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.45);
-    border-radius: 2px;
-    z-index: 99;
-    pointer-events: none;
-}
-
-/* ==========================================================================
-   Simulator Desktop Instructions Style
-   ========================================================================== */
-.simulator-instructions {
-    margin-top: 24px;
-    text-align: center;
-    z-index: 2;
-    max-width: 600px;
-}
-.simulator-instructions p {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.45);
-    line-height: 1.6;
-    margin-bottom: 4px;
-}
-kbd {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-family: monospace;
-    font-size: 10px;
-    color: rgba(255,255,255,0.85);
-}
-
-/* Animations */
-@keyframes pulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.8; }
-}
-
-/* ==========================================================================
-   Responsive Scaling
-   ========================================================================== */
-@media (max-width: 960px) {
-    .iphone-container {
-        transform: scale(0.85);
-    }
-}
-@media (max-width: 800px) {
-    .iphone-container {
-        transform: scale(0.68);
-    }
-}
-@media (max-width: 620px) {
-    .iphone-container {
-        transform: scale(0.5);
-    }
-    .simulator-instructions {
-        margin-top: -40px;
-    }
-}

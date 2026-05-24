@@ -57,131 +57,67 @@
         logRemote('Page script initialized', 'info');
     </script>
 
-    <div class="desktop-wrapper">
-        <!-- Interactive Workspace Backlight Ambient -->
-        <div class="ambient-glow"></div>
+    <!-- 3D Canvas Game Viewport -->
+    <canvas id="gameCanvas"></canvas>
 
-        <!-- Simulated iPhone Container (Landscape) -->
-        <div class="iphone-container" id="iphoneSimulator">
-            <!-- Hardware Buttons -->
-            <div class="button action-button"></div>
-            <div class="button volume-up"></div>
-            <div class="button volume-down"></div>
-            <div class="button power-button" id="powerBtn" title="Lock / Unlock Screen"></div>
+    <!-- Camera Orbit/Zoom Touch Zone (Top area) -->
+    <div class="camera-zone" id="cameraZone"></div>
 
-            <!-- Outer Titanium Bezel -->
-            <div class="iphone-bezel">
-                <!-- Screen Glass -->
-                <div class="iphone-screen" id="iphoneScreen">
-                    <!-- Dynamic Island (Landscape Left cutout) -->
-                    <div class="dynamic-island" id="dynamicIsland">
-                        <div class="camera-lens"></div>
-                        <div class="sensor-dot"></div>
-                    </div>
-
-                    <!-- 3D Canvas Game Viewport -->
-                    <canvas id="gameCanvas"></canvas>
-
-                    <!-- Camera Orbit/Zoom Touch Zone (Top area) -->
-                    <div class="camera-zone" id="cameraZone"></div >
-
-                    <!-- simulated iOS Status Bar -->
-                    <div class="ios-status-bar">
-                        <div class="status-left">
-                            <span class="status-time">9:41</span>
-                            <span class="status-location"><i class="fa-solid fa-location-arrow"></i></span>
-                        </div>
-                        <div class="status-right">
-                            <i class="fa-solid fa-signal" title="5G Signal"></i>
-                            <span class="status-network">5G</span>
-                            <i class="fa-solid fa-wifi" title="Wi-Fi"></i>
-                            <div class="battery-icon">
-                                <span class="battery-level">100</span>
-                                <div class="battery-body">
-                                    <div class="battery-fill"></div>
-                                    <div class="battery-tip"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Overlay HUD UI -->
-                    <div class="game-hud" id="gameHUD">
-                        <!-- Instruction Overlay (Tap to start) -->
-                        <div class="start-screen" id="startScreen">
-                            <div class="start-title">
-                                <h1>Aroundus</h1>
-                                <p class="start-subtitle">Adventure World</p>
-                            </div>
-                            <div class="instructions-panel" style="display: flex; justify-content: center;">
-                                <div class="instruction-row">
-                                    <span class="action-side right-side">DRIVE</span>
-                                    <span class="action-desc"><i class="fa-solid fa-circle-dot"></i> Drag Right Side Joystick to Move & Steer</span>
-                                </div>
-                            </div>
-                            <button class="start-btn" id="startBtn">
-                                <i class="fa-solid fa-play"></i> START ENGINE
-                            </button>
-                        </div>
-
-                        <!-- Mini-Map GPS (Top Center) -->
-                        <div class="minimap-container" id="minimapContainer">
-                            <canvas id="minimapCanvas" width="120" height="120"></canvas>
-                        </div>
-
-                        <!-- Coin Counter Widget (Top Left) -->
-                        <div class="hud-widget coin-counter">
-                            <i class="fa-solid fa-coins"></i> Coins: <span id="coinVal">0</span>
-                        </div>
-
-                        <!-- Upgrade Widget (Top Left, below Coin Counter) -->
-                        <div class="hud-widget upgrade-widget" id="upgradeWidget">
-                            <span class="car-level-badge">LEVEL <span id="lvlVal">1</span></span>
-                            <button class="upgrade-btn disabled" id="upgradeBtn" disabled>
-                                <i class="fa-solid fa-bolt"></i> UPGRADE (10)
-                            </button>
-                        </div>
-
-                        <!-- Active Control Visualizers (Visible on Touch) -->
-                        <div class="touch-zones">
-                            <!-- Right Joystick Zone -->
-                            <div class="zone right-zone" id="rightZone">
-                                <div class="joystick-ring" id="joyRing">
-                                    <div class="joystick-dot" id="joyDot"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Top Quick Utilities -->
-                        <div class="quick-utils">
-                            <button class="util-btn" id="resetBtn" title="Reset Car Position">
-                                <i class="fa-solid fa-arrows-spin"></i> Reset
-                            </button>
-                            <button class="util-btn" id="muteBtn" title="Mute/Unmute Music">
-                                <i class="fa-solid fa-volume-high"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Screen Locked/Off State -->
-                    <div class="screen-off" id="screenOff">
-                        <div class="charging-info">
-                            <i class="fa-solid fa-battery-three-quarters"></i> 100% Charged
-                        </div>
-                    </div>
+    <!-- Overlay HUD UI -->
+    <div class="game-hud" id="gameHUD">
+        <!-- Instruction Overlay (Tap to start) -->
+        <div class="start-screen" id="startScreen">
+            <div class="start-title">
+                <h1>Aroundus</h1>
+                <p class="start-subtitle">Adventure World</p>
+            </div>
+            <div class="instructions-panel" style="display: flex; justify-content: center;">
+                <div class="instruction-row">
+                    <span class="action-side right-side">DRIVE</span>
+                    <span class="action-desc"><i class="fa-solid fa-circle-dot"></i> Drag Right Side Joystick to Move & Steer</span>
                 </div>
             </div>
-            
-            <!-- Simulated Home Indicator Bar -->
-            <div class="home-indicator"></div>
+            <button class="start-btn" id="startBtn">
+                <i class="fa-solid fa-play"></i> START ENGINE
+            </button>
         </div>
 
-        <!-- Simulator Instructions underneath -->
-        <div class="simulator-instructions">
-            <p><strong>Landscape Mode:</strong> Use your mouse like fingers to test the game.</p>
-            <p>Drag on the right half of the screen to activate the virtual joystick to drive and steer.</p>
-            <p>You can also use <kbd>Arrow Keys</kbd> or <kbd>WASD</kbd> on keyboard for desktop testing.</p>
-            <p>Press the iPhone's <span style="color: #ff6b6b; font-weight: bold;">Power Button</span> on the right side to turn the phone screen on/off.</p>
+        <!-- Mini-Map GPS (Top Center) -->
+        <div class="minimap-container" id="minimapContainer">
+            <canvas id="minimapCanvas" width="120" height="120"></canvas>
+        </div>
+
+        <!-- Coin Counter Widget (Top Left) -->
+        <div class="hud-widget coin-counter">
+            <i class="fa-solid fa-coins"></i> Coins: <span id="coinVal">0</span>
+        </div>
+
+        <!-- Upgrade Widget (Top Left, below Coin Counter) -->
+        <div class="hud-widget upgrade-widget" id="upgradeWidget">
+            <span class="car-level-badge">LEVEL <span id="lvlVal">1</span></span>
+            <button class="upgrade-btn disabled" id="upgradeBtn" disabled>
+                <i class="fa-solid fa-bolt"></i> UPGRADE (10)
+            </button>
+        </div>
+
+        <!-- Active Control Visualizers (Visible on Touch) -->
+        <div class="touch-zones">
+            <!-- Right Joystick Zone -->
+            <div class="zone right-zone" id="rightZone">
+                <div class="joystick-ring" id="joyRing">
+                    <div class="joystick-dot" id="joyDot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Quick Utilities -->
+        <div class="quick-utils">
+            <button class="util-btn" id="resetBtn" title="Reset Car Position">
+                <i class="fa-solid fa-arrows-spin"></i> Reset
+            </button>
+            <button class="util-btn" id="muteBtn" title="Mute/Unmute Music">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
         </div>
     </div>
 
@@ -192,6 +128,6 @@
     <script src="https://unpkg.com/three@0.152.2/examples/js/postprocessing/SSAOPass.js"></script>
     <script src="https://unpkg.com/three@0.152.2/examples/js/loaders/RGBELoader.js"></script>
     <!-- Core Game Script -->
-    <script src="game.js?v=19"></script>
+    <script src="game.js?v=20"></script>
 </body>
 </html>

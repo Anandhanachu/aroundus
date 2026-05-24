@@ -204,7 +204,6 @@ const speedVal = document.getElementById('speedVal');
 const gearVal = document.getElementById('gearVal');
 const muteBtn = document.getElementById('muteBtn');
 const resetBtn = document.getElementById('resetBtn');
-const powerBtn = document.getElementById('powerBtn');
 const screenOff = document.getElementById('screenOff');
 const leftZone = document.getElementById('leftZone');
 const rightZone = document.getElementById('rightZone');
@@ -1958,21 +1957,6 @@ function setupControlListeners() {
         startScreen.classList.add('hidden');
     });
 
-    // 2. Power Button (Sleep Toggle)
-    powerBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        screenActive = !screenActive;
-        if (screenActive) {
-            screenOff.classList.remove('active');
-            if (isPlaying && !audio.muted) {
-                audio.startMusic();
-            }
-        } else {
-            screenOff.classList.add('active');
-            audio.stopMusic();
-        }
-    });
-
     // 3. Mute Toggle
     muteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2115,7 +2099,7 @@ function setupControlListeners() {
 
     // 7. Camera Swipe-to-Rotate Control (Top Area)
     const cameraZone = document.getElementById('cameraZone');
-    const iphoneScreen = document.getElementById('iphoneScreen');
+    const iphoneScreen = document.body;
     let isRotatingCamera = false;
     let lastRotateX = 0;
     let lastRotateY = 0;
