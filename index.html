@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <!-- FontAwesome for clean status icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=7">
     <!-- Three.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
 </head>
@@ -124,6 +124,24 @@
                             </button>
                         </div>
 
+                        <!-- Mini-Map GPS (Top Center) -->
+                        <div class="minimap-container" id="minimapContainer">
+                            <canvas id="minimapCanvas" width="120" height="120"></canvas>
+                        </div>
+
+                        <!-- Coin Counter Widget (Top Left) -->
+                        <div class="hud-widget coin-counter">
+                            <i class="fa-solid fa-coins"></i> Coins: <span id="coinVal">0</span>
+                        </div>
+
+                        <!-- Upgrade Widget (Top Left, below Coin Counter) -->
+                        <div class="hud-widget upgrade-widget" id="upgradeWidget">
+                            <span class="car-level-badge">LEVEL <span id="lvlVal">1</span></span>
+                            <button class="upgrade-btn disabled" id="upgradeBtn" disabled>
+                                <i class="fa-solid fa-bolt"></i> UPGRADE (10)
+                            </button>
+                        </div>
+
                         <!-- Active Control Visualizers (Visible on Touch) -->
                         <div class="touch-zones">
                             <!-- Right Joystick Zone -->
@@ -168,6 +186,6 @@
     </div>
 
     <!-- Core Game Scripts -->
-    <script src="game.js"></script>
+    <script src="game.js?v=9"></script>
 </body>
 </html>
