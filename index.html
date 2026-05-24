@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cute Car Adventure - Simulator</title>
+    <title>Aroundus</title>
     <!-- Google Fonts for premium cartoon & UI typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -110,7 +110,7 @@
                         <!-- Instruction Overlay (Tap to start) -->
                         <div class="start-screen" id="startScreen">
                             <div class="start-title">
-                                <h1>CUTE CAR</h1>
+                                <h1>Aroundus</h1>
                                 <p class="start-subtitle">Adventure World</p>
                             </div>
                             <div class="instructions-panel" style="display: flex; justify-content: center;">
@@ -185,7 +185,13 @@
         </div>
     </div>
 
-    <!-- Core Game Scripts -->
-    <script src="game.js?v=9"></script>
+    <!-- Post‑processing and loader scripts -->
+    <script src="https://unpkg.com/three@0.152.2/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://unpkg.com/three@0.152.2/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://unpkg.com/three@0.152.2/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://unpkg.com/three@0.152.2/examples/js/postprocessing/SSAOPass.js"></script>
+    <script src="https://unpkg.com/three@0.152.2/examples/js/loaders/RGBELoader.js"></script>
+    <!-- Core Game Script -->
+    <script src="game.js?v=19"></script>
 </body>
 </html>

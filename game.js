@@ -153,7 +153,8 @@ let frontLeftWheel, frontRightWheel, rearLeftWheel, rearRightWheel;
 let leftPupil, rightPupil;
 
 // Lights
-let sunLight;
+let ambientLight, hemiLight, sunLight, rimLight, bounceLight;
+let floorMat;
 
 // Game State
 let isPlaying = false;
@@ -228,10 +229,10 @@ const cameraOffset = new THREE.Vector3(5, 14, 18);
 const canvas = document.getElementById('gameCanvas');
 
 function initEngine() {
-    // Scene — darker realistic cinematic sky
+    // Scene — sky blue sky with dark environment
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x2a3b4c);
-    scene.fog = new THREE.FogExp2(0x2a3b4c, 0.0035);
+    scene.background = new THREE.Color(0x87CEEB);
+    scene.fog = new THREE.FogExp2(0x87CEEB, 0.0035);
 
     // Camera
     camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
@@ -249,11 +250,11 @@ function initEngine() {
 
     // Lights — HDR darker cinematic setup
     // Soft dark sky fill
-    const ambientLight = new THREE.AmbientLight(0x5c7a99, 0.35);
+    ambientLight = new THREE.AmbientLight(0x5c7a99, 0.35);
     scene.add(ambientLight);
 
     // Sky/Ground hemisphere
-    const hemiLight = new THREE.HemisphereLight(0x3a5b7c, 0x1f361a, 0.5);
+    hemiLight = new THREE.HemisphereLight(0x3a5b7c, 0x1f361a, 0.5);
     scene.add(hemiLight);
 
     // Primary subdued sun
@@ -273,12 +274,12 @@ function initEngine() {
     scene.add(sunLight);
 
     // Cool dark sky rim from opposite
-    const rimLight = new THREE.DirectionalLight(0x446688, 0.25);
+    rimLight = new THREE.DirectionalLight(0x446688, 0.25);
     rimLight.position.set(-70, 40, -50);
     scene.add(rimLight);
 
     // Warm bounce light from ground
-    const bounceLight = new THREE.PointLight(0x5a8a40, 0.15, 200);
+    bounceLight = new THREE.PointLight(0x5a8a40, 0.15, 200);
     bounceLight.position.set(0, 0.5, 0);
     scene.add(bounceLight);
 
@@ -314,64 +315,13 @@ window.addEventListener('resize', () => {
 // 3. Environment & World Models Creation
 // ==========================================================================
 function createGrassFloor() {
-    const S = 2048;
-    const canvasTex = document.createElement('canvas');
-    canvasTex.width = S; canvasTex.height = S;
-    const ctx = canvasTex.getContext('2d');
+    // Perfectly flat plane prevents z-fighting and clipping with river
+    const floorGeo = new THREE.PlaneGeometry(620, 620, 1, 1);
 
-    // Dark richer meadow green base
-    ctx.fillStyle = '#2a4a1f';
-    ctx.fillRect(0, 0, S, S);
-
-    // Mid-green variation blobs
-    for (let i = 0; i < 200; i++) {
-        const rx = Math.random()*S, ry = Math.random()*S;
-        const rad = 30 + Math.random()*110;
-        const g = ctx.createRadialGradient(rx,ry,0,rx,ry,rad);
-        g.addColorStop(0, `rgba(38,75,28,0.6)`);
-        g.addColorStop(1, `rgba(38,75,28,0)`);
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(rx,ry,rad,0,Math.PI*2); ctx.fill();
-    }
-    // Deep shadow dips
-    for (let i = 0; i < 150; i++) {
-        const rx = Math.random()*S, ry = Math.random()*S;
-        const rad = 20 + Math.random()*80;
-        const g = ctx.createRadialGradient(rx,ry,0,rx,ry,rad);
-        g.addColorStop(0, `rgba(18,35,12,0.6)`);
-        g.addColorStop(1, `rgba(18,35,12,0)`);
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(rx,ry,rad,0,Math.PI*2); ctx.fill();
-    }
-    // Individual grass blade strokes
-    for (let i = 0; i < 14000; i++) {
-        const rx = Math.random()*S, ry = Math.random()*S;
-        const h = 2 + Math.random()*6;
-        const r = 20+Math.random()*20, gv = 40+Math.random()*30, b = 15+Math.random()*15;
-        ctx.fillStyle = `rgba(${r},${gv},${b},0.45)`;
-        ctx.fillRect(rx, ry, 1, h);
-    }
-
-    const texture = new THREE.CanvasTexture(canvasTex);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(6, 6);
-
-    // Slightly bumpy plane for micro terrain feel
-    const floorGeo = new THREE.PlaneGeometry(620, 620, 60, 60);
-    const posAttr = floorGeo.attributes.position;
-    for (let i = 0; i < posAttr.count; i++) {
-        const px = posAttr.getX(i), pz = posAttr.getY(i);
-        posAttr.setZ(i, (Math.sin(px*0.18)*Math.cos(pz*0.12))*0.18
-                      +(Math.sin(px*0.4+1.2)*Math.sin(pz*0.35))*0.08);
-    }
-    floorGeo.computeVertexNormals();
-
-    const floorMat = new THREE.MeshStandardMaterial({
-        map: texture,
-        roughness: 0.92,
-        metalness: 0.0,
-        envMapIntensity: 0.3
+    floorMat = new THREE.MeshStandardMaterial({
+        color: 0x228B22, // Forest Green
+        roughness: 0.95,
+        metalness: 0.0
     });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
@@ -415,12 +365,12 @@ function createClouds() {
     }
 }
 
-// Foliage Materials — rich natural tones
-const woodMat = new THREE.MeshStandardMaterial({ color: 0x3d2b1a, roughness: 0.95, metalness: 0.0 });
-const pineMat = new THREE.MeshStandardMaterial({ color: 0x1a3d1f, roughness: 0.88, metalness: 0.0 });
-const puffMat = new THREE.MeshStandardMaterial({ color: 0x2e6b22, roughness: 0.88, metalness: 0.0 });
-const puffMat2 = new THREE.MeshStandardMaterial({ color: 0x3d8c2a, roughness: 0.86, metalness: 0.0 });
-const bushMat = new THREE.MeshStandardMaterial({ color: 0x3a7a28, roughness: 0.9,  metalness: 0.0 });
+// Foliage Materials — Kelly green and forest green combinations
+const woodMat  = new THREE.MeshStandardMaterial({ color: 0x3d2b1a, roughness: 0.95, metalness: 0.0 });
+const pineMat  = new THREE.MeshStandardMaterial({ color: 0x228B22, roughness: 0.88, metalness: 0.0 }); // Forest Green
+const puffMat  = new THREE.MeshStandardMaterial({ color: 0x4CBB17, roughness: 0.88, metalness: 0.0 }); // Kelly Green
+const puffMat2 = new THREE.MeshStandardMaterial({ color: 0x4CBB17, roughness: 0.86, metalness: 0.0 }); // Kelly Green
+const bushMat  = new THREE.MeshStandardMaterial({ color: 0x4CBB17, roughness: 0.90, metalness: 0.0 }); // Kelly Green
 
 function createPineTree(x, z, scale = 1.0) {
     const tree = new THREE.Group();
@@ -441,7 +391,7 @@ function createPineTree(x, z, scale = 1.0) {
         tree.add(leaves);
     }
     scene.add(tree);
-    obstacles.push({ x: x, z: z, radius: 1.0 * scale, type: 'tree' });
+    obstacles.push({ x: x, z: z, radius: 1.5 * scale, type: 'tree' }); // Slightly wider for pine
 }
 
 function createPuffTree(x, z, scale = 1.0) {
@@ -463,7 +413,7 @@ function createPuffTree(x, z, scale = 1.0) {
         tree.add(puff);
     }
     scene.add(tree);
-    obstacles.push({ x: x, z: z, radius: 1.1 * scale, type: 'tree' });
+    obstacles.push({ x: x, z: z, radius: 1.4 * scale, type: 'tree' }); // Slightly wider for puff
 }
 
 function createBush(x, z, scale = 1.0) {
@@ -675,23 +625,7 @@ function createArmoredBridge(zCenter) {
     const bridgeW   = 10;
     const numPlanks = 14;
 
-    // Stone abutment pillars on each bank
-    for (const side of [-1, 1]) {
-        const pillar = new THREE.Mesh(
-            new THREE.BoxGeometry(6, 5, bridgeW + 2),
-            stoneMat
-        );
-        pillar.position.set(side * (bridgeLen / 2 + 0.5), -1.5, 0);
-        pillar.castShadow = true;
-        pillar.receiveShadow = true;
-        bGroup.add(pillar);
-
-        // Stone cap
-        const cap = new THREE.Mesh(new THREE.BoxGeometry(7, 1, bridgeW + 3), stoneMat);
-        cap.position.set(side * (bridgeLen / 2 + 0.5), 1.5, 0);
-        cap.castShadow = true;
-        bGroup.add(cap);
-    }
+    // Removed massive stone abutments so they don't block the car
 
     // Arched wooden deck — planks following a cosine arch
     for (let i = 0; i < numPlanks; i++) {
@@ -753,7 +687,7 @@ function createArmoredBridge(zCenter) {
 
 function createNaturalEnvironment() {
     // ---- 1. Animated River ----
-    const segments = 80;
+    const segments = 400; // Increased 5x for perfectly smooth high-resolution curves
     const riverWidth = 26;
     const riverVerts = [];
     const riverUVs   = [];
@@ -801,57 +735,34 @@ function createNaturalEnvironment() {
             varying vec2 vUv;
             varying float vDepth;
 
-            float hash2(vec2 p) {
-                return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-            }
-
-            float caustic(vec2 uv, float t) {
-                vec2 p = uv * 6.0;
-                float v = 0.0;
-                for (int i = 0; i < 3; i++) {
-                    p = vec2(p.y - hash2(p)*0.3 + sin(t*0.7), p.x + hash2(p.yx)*0.3 - cos(t*0.5));
-                    v += abs(sin(p.x + t) + sin(p.y + t*1.3));
-                }
-                return clamp(1.0 - v * 0.35, 0.0, 1.0);
-            }
-
             void main() {
                 vec2 uv = vUv;
 
-                // -- Primary flow waves --
-                float wave1 = sin(uv.x * 18.0 + uTime * 3.2) * 0.5 + 0.5;
-                float wave2 = sin(uv.y * 11.0 - uTime * 2.4 + uv.x * 6.0) * 0.5 + 0.5;
-                float wave3 = sin(uv.x * 8.0  - uv.y * 5.0  + uTime * 1.8) * 0.5 + 0.5;
+                // -- Primary flow waves (Solid stepped bands for cartoon look) --
+                float wave = sin(uv.x * 16.0 + uTime * 3.5) * 0.5 + 0.5;
+                float wave2 = sin(uv.y * 12.0 - uTime * 2.0) * 0.5 + 0.5;
+                float combined = wave * 0.7 + wave2 * 0.3;
+                
+                // Hard step function for solid color banding
+                float stepWave = smoothstep(0.48, 0.52, combined); 
 
-                // -- Depth-based colour --
-                vec3 shallowColor = vec3(0.12, 0.55, 0.88);  // bright turquoise-blue
-                vec3 deepColor    = vec3(0.01, 0.12, 0.48);  // deep navy
-                vec3 waterColor   = mix(deepColor, shallowColor, wave1 * 0.6 + wave3 * 0.25);
+                // -- Solid colors --
+                vec3 shallowColor = vec3(0.08, 0.40, 0.75); // Bright stylized blue
+                vec3 deepColor    = vec3(0.02, 0.22, 0.55); // Dark stylized navy
+                vec3 waterColor   = mix(deepColor, shallowColor, stepWave);
 
-                // -- Caustic sparkle --
-                float caus = caustic(uv + uTime * 0.04, uTime);
-                waterColor += vec3(0.06, 0.14, 0.22) * caus;
+                // -- Simple foam edge --
+                float foam = smoothstep(0.04, 0.08, uv.x) * smoothstep(0.04, 0.08, 1.0 - uv.x);
+                
+                // If it's very close to edge, it's foam (whiteish)
+                waterColor = mix(vec3(0.85, 0.90, 0.95), waterColor, foam);
 
-                // -- Foam at surface peaks --
-                float foamMask = smoothstep(0.68, 1.0, wave1 * wave2);
-                vec3 foamColor = vec3(0.92, 0.97, 1.00);
-                waterColor = mix(waterColor, foamColor, foamMask * 0.50);
-
-                // -- Specular sun glint --
-                float glint = pow(max(0.0, wave1 * wave3 - 0.55), 4.0);
-                waterColor += vec3(1.0, 0.95, 0.8) * glint * 0.9;
-
-                // -- Bank edge darkening --
-                float edgeFade = smoothstep(0.0, 0.12, uv.x) * smoothstep(0.0, 0.12, 1.0 - uv.x);
-                waterColor *= 0.7 + 0.3 * edgeFade;
-
-                float alpha = mix(0.82, 0.95, edgeFade);
-                gl_FragColor = vec4(waterColor, alpha);
+                gl_FragColor = vec4(waterColor, 1.0); // Fully opaque
             }
         `,
-        transparent: true,
+        transparent: false,
         side: THREE.DoubleSide,
-        depthWrite: false
+        depthWrite: true
     });
 
     const riverMesh = new THREE.Mesh(riverGeo, riverMaterial);
@@ -873,12 +784,20 @@ function createNaturalEnvironment() {
         createRealisticRock(bx, bz, 1.8 + Math.random() * 0.8);
     }
 
-    // Helper — is point clear of river and start zone?
+    // Helper — is point clear of river, start zone, AND bridge entrances?
     const isClear = (wx, wz) => {
         if (Math.sqrt(wx*wx + wz*wz) > 244) return false;
         if (Math.sqrt(wx*wx + (wz-75)*(wz-75)) < 22) return false; // start clear zone
         const rx = getRiverX(wz);
-        if (Math.abs(wx - rx) < 16) return false; // inside river
+        if (Math.abs(wx - rx) < 18) return false; // inside river
+
+        // Clear bridge entrances so car doesn't get stuck on rocks right at the start of a bridge
+        for (let i = 0; i < bridges.length; i++) {
+            const b = bridges[i];
+            // Clear a wide box around the ends of the bridges
+            if (Math.abs(wz - b.z) < 16 && Math.abs(wx - b.x) < 32) return false;
+        }
+
         return true;
     };
 
@@ -907,81 +826,31 @@ function createNaturalEnvironment() {
         }
     }
 
-    // ---- 5. Zone A — Open Meadow (West) ----
-    for (let i = 0; i < 60; i++) {
-        const wx = -230 + Math.random() * 180;
-        const wz = -240 + Math.random() * 480;
-        if (!isClear(wx, wz) || wx > getRiverX(wz) - 28) continue;
+    // ---- 5. Massive Forest & Rock Population (Entire Map) ----
+    // Dense scattering across the map
+    for (let i = 0; i < 1200; i++) {
+        const wx = (Math.random() - 0.5) * 480;
+        const wz = (Math.random() - 0.5) * 490;
+        
+        // Skip if not in a clear playable zone
+        if (!isClear(wx, wz)) continue;
+        
         const r = Math.random();
-        if      (r < 0.40) createPuffTree(wx, wz, 1.0 + Math.random() * 0.7);
-        else if (r < 0.62) createBush(wx, wz, 0.9 + Math.random() * 0.5);
-        else if (r < 0.78) createPineTree(wx, wz, 0.9 + Math.random() * 0.5);
-        else if (r < 0.90) createDecorativePlant(wx, wz, 0.9 + Math.random()*0.6);
-        else               createFlower(wx, wz);
-    }
-    // Flower meadow clusters in Zone A
-    for (let i = 0; i < 80; i++) {
-        const wx = -220 + Math.random() * 170;
-        const wz = -230 + Math.random() * 460;
-        if (!isClear(wx, wz) || wx > getRiverX(wz) - 28) continue;
-        createFlower(wx, wz);
-    }
-    // Rock outcrops in Zone A
-    for (let i = 0; i < 20; i++) {
-        const wx = -210 + Math.random() * 150;
-        const wz = -230 + Math.random() * 460;
-        if (!isClear(wx, wz) || wx > getRiverX(wz) - 28) continue;
-        createRealisticRock(wx, wz, 0.5 + Math.random() * 0.8);
-    }
-
-    // ---- 6. Zone B — Rocky Highland (East, z>0) ----
-    for (let zr = 10; zr < 248; zr += 16) {
-        const cx = getRiverX(zr);
-        const ridgeStart = cx + 28 + Math.random() * 22;
-        const ridgeLen   = 45 + Math.random() * 65;
-        for (let ri = 0; ri < ridgeLen; ri += 5.5) {
-            const wx = ridgeStart + ri + (Math.random()-0.5)*4;
-            const wz = zr + (Math.random()-0.5)*6;
-            if (!isClear(wx, wz)) continue;
-            createRealisticRock(wx, wz, 0.9 + Math.random() * 1.1);
-            if (Math.random() < 0.30) createPineTree(wx+(Math.random()-0.5)*6, wz+(Math.random()-0.5)*6, 0.7+Math.random()*0.5);
-            if (Math.random() < 0.15) createFlower(wx+(Math.random()-0.5)*3, wz+(Math.random()-0.5)*3);
+        if (r < 0.45) {
+            // High density of trees
+            if (Math.random() < 0.5) createPineTree(wx, wz, 0.8 + Math.random() * 0.7);
+            else createPuffTree(wx, wz, 0.8 + Math.random() * 0.7);
+        } else if (r < 0.75) {
+            // High density of rocks
+            createRealisticRock(wx, wz, 0.5 + Math.random() * 1.5);
+        } else if (r < 0.90) {
+            // Bushes & Decorative Plants
+            if (Math.random() < 0.5) createBush(wx, wz, 0.8 + Math.random() * 0.6);
+            else createDecorativePlant(wx, wz, 0.8 + Math.random() * 0.6);
+        } else {
+            // Flowers
+            createFlower(wx, wz);
         }
-    }
-    for (let i = 0; i < 35; i++) {
-        const wx = 30 + Math.random() * 210;
-        const wz = 5  + Math.random() * 245;
-        if (!isClear(wx, wz) || wx < getRiverX(wz) + 28) continue;
-        const r = Math.random();
-        if (r < 0.5) createRealisticRock(wx, wz, 0.7 + Math.random() * 0.9);
-        else if (r < 0.75) createPineTree(wx, wz, 0.9 + Math.random() * 0.6);
-        else createDecorativePlant(wx, wz, 0.9 + Math.random()*0.5);
-    }
-
-    // ---- 7. Zone C — Dense Woodland (East, z<0) ----
-    for (let i = 0; i < 70; i++) {
-        const wx = 25  + Math.random() * 220;
-        const wz = -245 + Math.random() * 245;
-        if (!isClear(wx, wz) || wx < getRiverX(wz) + 28) continue;
-        const r = Math.random();
-        if      (r < 0.38) createPuffTree(wx, wz, 1.1 + Math.random() * 0.8);
-        else if (r < 0.65) createPineTree(wx, wz, 1.0 + Math.random() * 0.7);
-        else if (r < 0.80) createBush(wx, wz, 1.0 + Math.random() * 0.6);
-        else if (r < 0.92) createDecorativePlant(wx, wz, 1.0 + Math.random()*0.6);
-        else               createFlower(wx, wz);
-    }
-    // Woodland floor flowers
-    for (let i = 0; i < 60; i++) {
-        const wx = 28  + Math.random() * 210;
-        const wz = -240 + Math.random() * 240;
-        if (!isClear(wx, wz) || wx < getRiverX(wz) + 28) continue;
-        createFlower(wx, wz);
-    }
-    for (let i = 0; i < 25; i++) {
-        const wx = 30  + Math.random() * 200;
-        const wz = -240 + Math.random() * 240;
-        if (!isClear(wx, wz) || wx < getRiverX(wz) + 28) continue;
-        createRealisticRock(wx, wz, 0.4 + Math.random() * 0.7);
     }
 }
 
@@ -1140,7 +1009,7 @@ function performUpgrade() {
     if (coinCount >= cost && carLevel < 4) {
         coinCount -= cost;
         carLevel++;
-
+        
         const coinVal = document.getElementById('coinVal');
         if (coinVal) coinVal.textContent = coinCount;
 
@@ -2364,30 +2233,37 @@ function angleDiff(a, b) {
     return Math.atan2(Math.sin(diff), Math.cos(diff));
 }
 
-// Resolution for collisions against boundary mesas, cacti, and signposts
+// Resolution for collisions against trees, rocks and world obstacles
 function resolveCollisions() {
     if (!carGroup) return;
-    const carRadius = 1.6;
+    const carRadius = 0.7; // Base car half-width
 
     for (let i = 0; i < obstacles.length; i++) {
         const obs = obstacles[i];
         const dx = carGroup.position.x - obs.x;
         const dz = carGroup.position.z - obs.z;
-        const dist = Math.sqrt(dx * dx + dz * dz);
+        const dist = Math.sqrt(dx * dx + dz * dz) || 0.001;
         const minDist = carRadius + obs.radius;
-        
+
         if (dist < minDist) {
-            // Collision detected! Push car back
-            const overlap = minDist - dist;
-            const nx = dist > 0 ? dx / dist : 1;
-            const nz = dist > 0 ? dz / dist : 0;
-            
+            // Push car fully outside the obstacle
+            const overlap = (minDist - dist) + 0.05; // small padding to prevent re-entry
+            const nx = dx / dist;
+            const nz = dz / dist;
+
             carGroup.position.x += nx * overlap;
             carGroup.position.z += nz * overlap;
-            
-            // Soft bounce back and slow down
-            speed = -speed * 0.2;
-            cameraShake = 0.8; // trigger screen shake
+
+            // Cancel the velocity component going INTO the obstacle (dot product)
+            // This stops the car cleanly instead of a glitchy bounce
+            const dot = speed * (Math.sin(heading) * (-nx) + Math.cos(heading) * (-nz));
+            if (dot > 0) {
+                speed *= 0.05; // nearly stop if heading into wall
+            } else {
+                speed *= 0.4; // sliding away — allow some bleed
+            }
+
+            if (Math.abs(speed) > 0.5) cameraShake = 0.6;
         }
     }
 }
@@ -2469,25 +2345,43 @@ function updatePhysics() {
     // Resolve any obstacle or plant collisions before committing rotation
     resolveCollisions();
 
-    // Check river crossing
+    // Check river crossing and Bridge Y tracking
     const riverX = getRiverX(carGroup.position.z);
-    if (Math.abs(carGroup.position.x - riverX) < 14) {
+    let targetY = 0;
+
+    if (Math.abs(carGroup.position.x - riverX) < 16) {
         let onBridge = false;
+        let activeBridge = null;
         for (let i = 0; i < bridges.length; i++) {
             const b = bridges[i];
-            if (Math.abs(carGroup.position.z - b.z) < (b.widthZ / 2) + 2.0 &&
-                Math.abs(carGroup.position.x - b.x) < (b.widthX / 2) + 2.0) {
+            if (Math.abs(carGroup.position.z - b.z) < (b.widthZ / 2) + 2.5 &&
+                Math.abs(carGroup.position.x - b.x) < (b.widthX / 2) + 2.5) {
                 onBridge = true;
+                activeBridge = b;
                 break;
             }
         }
-        if (!onBridge) {
+
+        if (onBridge && activeBridge) {
+            // Calculate height on arch. Bridge is aligned along X axis.
+            // Bridge length is 32 (spanning X). b.x is the center.
+            const localX = carGroup.position.x - activeBridge.x;
+            const bridgeLen = 32.0;
+            const t = localX / bridgeLen; // normalizes roughly to [-0.5, 0.5]
+            if (Math.abs(t) <= 0.55) {
+                // Same cosine arch equation from createArmoredBridge
+                targetY = 0.5 + 1.2 * (1 - 4 * t * t) + 0.35 / 2;
+            }
+        } else {
             speed *= 0.85; // High drag in water
             if (speed > 0.02 && Math.random() < 0.3) {
                 spawnSmoke(carGroup.position, 1, false); // Water splash proxy
             }
         }
     }
+
+    // Smoothly interpolate car Y position to climb up/down the bridge or ground
+    carGroup.position.y += (targetY - carGroup.position.y) * 0.25;
 
     // Check coin collisions
     const carRadius = 1.6;
@@ -2759,7 +2653,7 @@ function drawMinimap() {
     const mZ = (val) => (val + 260) / 520 * h;
 
     // --- Background: grass zones ---
-    ctx.fillStyle = '#4a7a3a';
+    ctx.fillStyle = '#228B22'; // Forest Green
     ctx.fillRect(0, 0, w, h);
 
     // River (blue fill)
@@ -2798,7 +2692,7 @@ function drawMinimap() {
         if (obs.type === 'rock') {
             ctx.fillStyle = '#222222'; // Dark grey for rocks
         } else {
-            ctx.fillStyle = '#2a4a1f'; // Dark green for trees
+            ctx.fillStyle = '#4CBB17'; // Kelly Green for trees
         }
         ctx.fill();
     });
